@@ -1,6 +1,7 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, LogIn } from "lucide-react";
+import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, Shield } from "lucide-react";
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,9 +22,9 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <Link to="/" className="flex items-center">
-                <span className="text-cyber-purple font-bold text-xl glow-text mr-2">V</span>
-                <span className="text-white font-bold">Dashboard</span>
+              <Link to="/auth" className="flex items-center">
+                <Shield className="text-cyber-purple h-5 w-5 mr-2" />
+                <span className="text-white font-bold">Access Terminal</span>
               </Link>
             </div>
             <div className="hidden md:block">
