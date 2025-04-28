@@ -47,11 +47,21 @@ export function UserLogsPanel() {
           <p className="text-sm text-gray-400">
             User created: {new Date(log.created_at).toLocaleDateString()}
           </p>
-          {log.character_profiles?.map((profile, index) => (
-            <p key={index} className="text-xs text-gray-500">
-              Character: {profile.name} ({profile.class} - {profile.lifepath})
-            </p>
-          ))}
+          {Array.isArray(log.character_profiles) ? (
+            // Handle case where character_profiles is an array
+            log.character_profiles.map((profile, index) => (
+              <p key={index} className="text-xs text-gray-500">
+                Character: {profile.name} ({profile.class} - {profile.lifepath})
+              </p>
+            ))
+          ) : (
+            // Handle case where character_profiles is a single object
+            log.character_profiles && (
+              <p className="text-xs text-gray-500">
+                Character: {log.character_profiles.name} ({log.character_profiles.class} - {log.character_profiles.lifepath})
+              </p>
+            )
+          )}
         </div>
       ))}
     </ScrollArea>
