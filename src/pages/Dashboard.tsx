@@ -1,46 +1,13 @@
 
 import { CharacterProfile } from "../components/CharacterProfile";
 import { RelicStatus } from "../components/RelicStatus";
-import { useState, useEffect } from "react";
 import { MissionCard, Mission } from "../components/MissionCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/LoadingState";
+import { useMissions } from "@/hooks/useMissions";
 
 export default function Dashboard() {
-  const [missions, setMissions] = useState<Mission[]>(() => {
-    const savedMissions = localStorage.getItem("v-missions");
-    return savedMissions
-      ? JSON.parse(savedMissions)
-      : [
-          {
-            id: "mission1",
-            name: "The Heist",
-            type: "main",
-            progress_percent: 100,
-            notes: "Completed the Konpeki Plaza heist with Jackie.",
-            completed: true,
-          },
-          {
-            id: "mission2",
-            name: "Playing for Time",
-            type: "main",
-            progress_percent: 60,
-            notes: "Met with Takemura, investigating leads on Hellman.",
-            completed: false,
-          },
-          {
-            id: "mission3",
-            name: "The Hunt",
-            type: "side",
-            progress_percent: 75,
-            notes: "Helping River track down a serial killer.",
-            completed: false,
-          },
-        ];
-  });
-
-  // Fetch user profile to check if character is selected
   const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ["user-profile"],
     queryFn: async () => {
@@ -53,35 +20,19 @@ export default function Dashboard() {
         .eq("id", session.user.id)
         .single();
       
-      if (error) {
-        console.error("Profile fetch error:", error);
-        return null;
-      }
+      if (error) throw error;
       return data;
     }
   });
 
-  useEffect(() => {
-    localStorage.setItem("v-missions", JSON.stringify(missions));
-  }, [missions]);
-
-  const handleUpdateMission = (updatedMission: Mission) => {
-    setMissions(
-      missions.map((mission) =>
-        mission.id === updatedMission.id ? updatedMission : mission
-      )
-    );
-  };
-
-  const handleDeleteMission = (id: string) => {
-    setMissions(missions.filter((mission) => mission.id !== id));
-  };
+  // Use the missions hook instead of hardcoded data
+  const { missions, isLoading: isLoadingMissions, updateMission } = useMissions();
 
   console.log("Dashboard render - userProfile:", userProfile);
   console.log("isLoadingProfile:", isLoadingProfile);
 
-  // Show loading state if still loading profile data
-  if (isLoadingProfile) {
+  // Show loading state if still loading profile or missions data
+  if (isLoadingProfile || isLoadingMissions) {
     return <LoadingState message="Loading character data..." />;
   }
 
@@ -99,6 +50,17 @@ export default function Dashboard() {
     );
   }
 
+  // Sort and filter missions for the dashboard view
+  const recentMissions = missions
+    .sort((a, b) => {
+      // Sort completed missions to the bottom
+      if (a.completed && !b.completed) return 1;
+      if (!a.completed && b.completed) return -1;
+      // Then sort by progress (descending)
+      return b.progress_percent - a.progress_percent;
+    })
+    .slice(0, 3);
+
   return (
     <div className="container px-4 py-8 mx-auto text-white">
       <h1 className="text-3xl font-bold mb-6 text-white">
@@ -114,23 +76,14 @@ export default function Dashboard() {
               Recent Missions
             </h2>
             <div className="space-y-4">
-              {missions
-                .sort((a, b) => {
-                  // Sort completed missions to the bottom
-                  if (a.completed && !b.completed) return 1;
-                  if (!a.completed && b.completed) return -1;
-                  // Then sort by progress (descending)
-                  return b.progress_percent - a.progress_percent;
-                })
-                .slice(0, 3)
-                .map((mission) => (
-                  <MissionCard
-                    key={mission.id}
-                    mission={mission}
-                    onUpdate={handleUpdateMission}
-                    onDelete={handleDeleteMission}
-                  />
-                ))}
+              {recentMissions.map((mission) => (
+                <MissionCard
+                  key={mission.id}
+                  mission={mission}
+                  onUpdate={updateMission}
+                  onDelete={() => {}} // We don't need delete on dashboard view
+                />
+              ))}
             </div>
           </div>
         </div>
