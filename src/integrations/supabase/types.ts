@@ -9,7 +9,273 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      character_profiles: {
+        Row: {
+          class: string
+          created_at: string | null
+          gear: string | null
+          id: string
+          lifepath: string
+          name: string
+          primary_weapons: string | null
+          profile_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          class?: string
+          created_at?: string | null
+          gear?: string | null
+          id?: string
+          lifepath?: string
+          name?: string
+          primary_weapons?: string | null
+          profile_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          class?: string
+          created_at?: string | null
+          gear?: string | null
+          id?: string
+          lifepath?: string
+          name?: string
+          primary_weapons?: string | null
+          profile_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "character_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cyberware: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          profile_id: string | null
+          status: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          profile_id?: string | null
+          status?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          profile_id?: string | null
+          status?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cyberware_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          completed: boolean | null
+          created_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          profile_id: string | null
+          progress: number | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          profile_id?: string | null
+          progress?: number | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          profile_id?: string | null
+          progress?: number | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "missions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          id: string
+          profile_id: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          profile_id?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          profile_id?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      npc_relationships: {
+        Row: {
+          background: string | null
+          created_at: string | null
+          friendship: number | null
+          id: string
+          image: string | null
+          love: number | null
+          lust: number | null
+          name: string
+          profile_id: string | null
+          trust: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          background?: string | null
+          created_at?: string | null
+          friendship?: number | null
+          id?: string
+          image?: string | null
+          love?: number | null
+          lust?: number | null
+          name: string
+          profile_id?: string | null
+          trust?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          background?: string | null
+          created_at?: string | null
+          friendship?: number | null
+          id?: string
+          image?: string | null
+          love?: number | null
+          lust?: number | null
+          name?: string
+          profile_id?: string | null
+          trust?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "npc_relationships_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      relic_status: {
+        Row: {
+          created_at: string | null
+          id: string
+          johnny_influence: number | null
+          profile_id: string | null
+          relic_integrity: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          johnny_influence?: number | null
+          profile_id?: string | null
+          relic_integrity?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          johnny_influence?: number | null
+          profile_id?: string | null
+          relic_integrity?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relic_status_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
