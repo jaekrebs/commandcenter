@@ -1,68 +1,26 @@
-import { useState, useEffect } from "react";
-import { PlusCircle, Edit, Trash, X, Check } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { LoadingState } from "@/components/LoadingState";
 
-type Note = {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string;
-};
+import { useState } from "react";
+import { PlusCircle, Edit, Trash } from "lucide-react";
+import { LoadingState } from "@/components/LoadingState";
+import { useNotes, Note } from "@/hooks/useNotes";
 
 export default function Notes() {
-  const [notes, setNotes] = useState<Note[]>(() => {
-    const savedNotes = localStorage.getItem("v-notes");
-    return savedNotes
-      ? JSON.parse(savedNotes)
-      : [
-          {
-            id: "note1",
-            title: "First meeting with Judy",
-            content:
-              "Met Judy Alvarez at Lizzie's Bar. She's a BD editor, seems pretty skilled. Not the friendliest, but given the circumstances, can't blame her. Might be a valuable contact.",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: "note2",
-            title: "Relic symptoms",
-            content:
-              "Symptoms getting worse. More frequent blackouts, headaches. Johnny appearing more often. Need to find a solution fast.",
-            createdAt: new Date().toISOString(),
-          },
-        ];
-  });
-
-  const [activeNote, setActiveNote] = useState<Note | null>(notes[0] || null);
+  const { notes, isLoading, addNote, updateNote, deleteNote, hasCharacter } = useNotes();
+  const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [isAddingNote, setIsAddingNote] = useState(false);
-  const [newNote, setNewNote] = useState<Omit<Note, "id" | "createdAt">>({
+  const [newNote, setNewNote] = useState<Omit<Note, "id" | "created_at" | "updated_at">>({
     title: "",
     content: "",
   });
 
-  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ["user-profile"],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return null;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("selected_character_profile_id")
-        .eq("id", session.user.id)
-        .single();
-      
-      if (error) throw error;
-      return data;
+  // Set the first note as active when notes load or change
+  useState(() => {
+    if (notes.length > 0 && !activeNote) {
+      setActiveNote(notes[0]);
     }
   });
-
-  useEffect(() => {
-    localStorage.setItem("v-notes", JSON.stringify(notes));
-  }, [notes]);
 
   const handleNoteClick = (note: Note) => {
     setActiveNote(note);
@@ -78,9 +36,7 @@ export default function Notes() {
 
   const handleSaveEdit = () => {
     if (editingNote) {
-      setNotes(
-        notes.map((note) => (note.id === editingNote.id ? editingNote : note))
-      );
+      updateNote(editingNote);
       setActiveNote(editingNote);
       setIsEditing(false);
     }
@@ -92,24 +48,16 @@ export default function Notes() {
 
   const handleAddNote = () => {
     if (newNote.title.trim()) {
-      const id = `note${Date.now()}`;
-      const note = {
-        id,
-        ...newNote,
-        createdAt: new Date().toISOString(),
-      };
-      const updatedNotes = [...notes, note];
-      setNotes(updatedNotes);
-      setActiveNote(note);
+      addNote(newNote);
       setNewNote({ title: "", content: "" });
       setIsAddingNote(false);
     }
   };
 
   const handleDeleteNote = (id: string) => {
-    const updatedNotes = notes.filter((note) => note.id !== id);
-    setNotes(updatedNotes);
+    deleteNote(id);
     if (activeNote?.id === id) {
+      const updatedNotes = notes.filter((note) => note.id !== id);
       setActiveNote(updatedNotes[0] || null);
     }
   };
@@ -123,11 +71,13 @@ export default function Notes() {
     });
   };
 
-  if (isLoadingProfile) {
+  // Show loading state while fetching notes
+  if (isLoading) {
     return <LoadingState message="Loading notes data..." />;
   }
 
-  if (!userProfile?.selected_character_profile_id) {
+  // Show character selection message if no character is selected
+  if (!hasCharacter) {
     return (
       <div className="container px-4 py-8 mx-auto">
         <LoadingState 
@@ -228,7 +178,7 @@ export default function Notes() {
                       {note.content}
                     </p>
                     <p className="text-gray-500 text-xs mt-2">
-                      {formatDate(note.createdAt)}
+                      {formatDate(note.created_at)}
                     </p>
                   </div>
                 ))
@@ -267,7 +217,7 @@ export default function Notes() {
                     className="bg-cyber-black border border-cyber-purple/30 text-white text-lg font-bold rounded px-3 py-2 w-full mb-2 focus:outline-none focus:ring-1 focus:ring-cyber-purple"
                   />
                   <div className="text-sm text-gray-400">
-                    {formatDate(editingNote.createdAt)}
+                    {formatDate(editingNote.created_at)}
                   </div>
                 </div>
                 <textarea
@@ -303,7 +253,7 @@ export default function Notes() {
                       {activeNote.title}
                     </h2>
                     <div className="text-sm text-gray-400">
-                      {formatDate(activeNote.createdAt)}
+                      {formatDate(activeNote.created_at)}
                     </div>
                   </div>
                   <button
