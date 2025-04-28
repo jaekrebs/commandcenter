@@ -95,17 +95,7 @@ export function RoleManagementPanel() {
         <div key={userRole.id} className="flex items-center justify-between mb-4 last:mb-0">
           <div>
             <p className="text-sm">
-              {(() => {
-                // Check if profiles exists and is not null
-                if (!userRole.profiles) return userRole.user_id;
-                // Check if profiles is an object
-                if (typeof userRole.profiles !== 'object') return userRole.user_id;
-                // Check if the email property exists in profiles
-                // TypeScript needs this additional check with the null check for proper type narrowing
-                if (userRole.profiles === null || !('email' in userRole.profiles)) return userRole.user_id;
-                // Return the email if it exists, otherwise fall back to user_id
-                return userRole.profiles.email || userRole.user_id;
-              })()}
+              {userRole.profiles?.email || userRole.user_id}
             </p>
             <p className="text-xs text-gray-400">Current role: {userRole.role}</p>
           </div>
