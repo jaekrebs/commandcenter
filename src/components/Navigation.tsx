@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, Shield, LogIn, LogOut } from "lucide-react";
@@ -13,14 +12,12 @@ export function Navigation() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
       }
     );
 
-    // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
@@ -84,25 +81,6 @@ export function Navigation() {
               </div>
             </div>
           </div>
-          <div className="hidden md:flex md:items-center md:ml-6">
-            {user ? (
-              <button 
-                onClick={handleSignOut}
-                className="bg-cyber-darkgray text-white border border-cyber-purple/50 px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 hover:bg-cyber-purple/20 transition-all hover:border-cyber-purple hover:shadow-[0_0_10px_rgba(155,135,245,0.5)]"
-              >
-                <LogOut size={16} />
-                Sign Out
-              </button>
-            ) : (
-              <Link 
-                to="/auth" 
-                className="bg-cyber-darkgray text-white border border-cyber-purple/50 px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 hover:bg-cyber-purple/20 transition-all hover:border-cyber-purple hover:shadow-[0_0_10px_rgba(155,135,245,0.5)]"
-              >
-                <LogIn size={16} />
-                Access Terminal
-              </Link>
-            )}
-          </div>
           <div className="-mr-2 flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -132,7 +110,7 @@ export function Navigation() {
                 <span>{item.name}</span>
               </Link>
             ))}
-            {user ? (
+            {user && (
               <button
                 onClick={() => {
                   handleSignOut();
@@ -143,15 +121,6 @@ export function Navigation() {
                 <LogOut size={16} />
                 <span>Sign Out</span>
               </button>
-            ) : (
-              <Link
-                to="/auth"
-                className="block w-full mt-4 px-3 py-2 rounded-md text-base font-medium flex items-center space-x-2 text-gray-300 hover:bg-cyber-purple/10 hover:text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                <LogIn size={16} />
-                <span>Access Terminal</span>
-              </Link>
             )}
           </div>
         </div>
