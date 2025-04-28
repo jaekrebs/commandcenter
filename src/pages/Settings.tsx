@@ -31,18 +31,10 @@ export default function Settings() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', session.user.id)
-            .single();
-            
-          if (profile) {
-            setSettings(prev => ({
-              ...prev,
-              username: profile.username
-            }));
-          }
+          setSettings(prev => ({
+            ...prev,
+            username: session.user.email || ""
+          }));
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -257,9 +249,41 @@ export default function Settings() {
         </div>
         
         <div>
-          <AuthSection />
-          <div className="mt-6">
-            <DataSyncSection />
+          <div className="cyber-panel">
+            <h2 className="text-xl font-bold mb-4">Authentication</h2>
+            <p className="text-sm text-gray-300 mb-4">
+              Manage your account authentication settings.
+            </p>
+            <button 
+              className="cyber-button text-sm"
+              onClick={() => supabase.auth.signOut().then(() => {
+                toast({
+                  title: "Signed out",
+                  description: "You have been successfully signed out."
+                });
+                window.location.href = "/";
+              })}
+            >
+              Sign Out
+            </button>
+          </div>
+          
+          <div className="cyber-panel mt-6">
+            <h2 className="text-xl font-bold mb-4">Data Sync</h2>
+            <p className="text-sm text-gray-300 mb-4">
+              Sync your local data with the cloud.
+            </p>
+            <button 
+              className="cyber-button text-sm"
+              onClick={() => {
+                toast({
+                  title: "Coming Soon",
+                  description: "This feature will be available in a future update."
+                });
+              }}
+            >
+              Sync Data
+            </button>
           </div>
           
           <div className="cyber-panel mt-6">

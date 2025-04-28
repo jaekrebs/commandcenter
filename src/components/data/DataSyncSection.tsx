@@ -1,9 +1,12 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+
 export function DataSyncSection() {
   const [isSyncing, setIsSyncing] = useState(false);
+  
   const syncToSupabase = async () => {
     setIsSyncing(true);
     try {
@@ -83,6 +86,7 @@ export function DataSyncSection() {
           content: note.content
         })));
       }
+      
       toast({
         title: "Success",
         description: "Your data has been synced to Supabase."
@@ -98,5 +102,21 @@ export function DataSyncSection() {
       setIsSyncing(false);
     }
   };
-  return;
+  
+  return (
+    <div className="cyber-panel">
+      <h2 className="text-xl font-bold mb-4">Data Sync</h2>
+      <p className="text-sm text-gray-300 mb-4">
+        Sync your local data with the cloud database.
+      </p>
+      <Button 
+        variant="default"
+        disabled={isSyncing}
+        onClick={syncToSupabase}
+        className="w-full"
+      >
+        {isSyncing ? "Syncing..." : "Sync to Supabase"}
+      </Button>
+    </div>
+  );
 }
