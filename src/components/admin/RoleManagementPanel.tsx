@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,9 +96,14 @@ export function RoleManagementPanel() {
           <div>
             <p className="text-sm">
               {(() => {
+                // Check if profiles exists and is not null
                 if (!userRole.profiles) return userRole.user_id;
+                // Check if profiles is an object
                 if (typeof userRole.profiles !== 'object') return userRole.user_id;
-                if (!('email' in userRole.profiles)) return userRole.user_id;
+                // Check if the email property exists in profiles
+                // TypeScript needs this additional check with the null check for proper type narrowing
+                if (userRole.profiles === null || !('email' in userRole.profiles)) return userRole.user_id;
+                // Return the email if it exists, otherwise fall back to user_id
                 return userRole.profiles.email || userRole.user_id;
               })()}
             </p>
