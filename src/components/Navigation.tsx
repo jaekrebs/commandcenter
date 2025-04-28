@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, Shield } from "lucide-react";
+import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, Shield, LogIn } from "lucide-react";
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
