@@ -1,125 +1,143 @@
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/use-toast";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 export function AccessCodeSection() {
-  const { user } = useAuth();
   const [accessCode, setAccessCode] = useState("");
-  const [currentAccessCode, setCurrentAccessCode] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  useEffect(() => {
-    if (user) {
-      fetchCurrentAccessCode();
+  const [loading, setLoading] = useState(false);
+
+  const handleSaveAccessCode = async () => {
+    if (accessCode.length !== 4 || !/^\d{4}$/.test(accessCode)) {
+      toast({
+        title: "Invalid access code",
+        description: "Please enter a valid 4-digit access code",
+        variant: "destructive",
+      });
+      return;
     }
-  }, [user]);
-  
-  const fetchCurrentAccessCode = async () => {
+
+    setLoading(true);
     try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) throw userError;
+      
+      if (!userData.user) {
+        throw new Error("No authenticated user found");
+      }
+      
+      // Check if an access code already exists for this user
+      const { data: existingCode, error: checkError } = await supabase
+        .from('access_codes')
+        .select('*')
+        .eq('user_id', userData.user.id)
+        .maybeSingle();
+        
+      if (checkError) throw checkError;
+      
+      let operationResult;
+      
+      if (existingCode) {
+        // Update existing code
+        operationResult = await supabase
+          .from('access_codes')
+          .update({ code: accessCode })
+          .eq('user_id', userData.user.id);
+      } else {
+        // Create new access code
+        operationResult = await supabase
+          .from('access_codes')
+          .insert([{ user_id: userData.user.id, code: accessCode }]);
+      }
+      
+      if (operationResult.error) throw operationResult.error;
+      
+      toast({
+        title: "Access code updated",
+        description: "Your access code has been successfully updated."
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch the user's current access code when component mounts
+  const fetchAccessCode = async () => {
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) throw userError;
+      
+      if (!userData.user) return;
+      
       const { data, error } = await supabase
         .from('access_codes')
         .select('code')
-        .eq('user_id', user?.id)
-        .single();
+        .eq('user_id', userData.user.id)
+        .maybeSingle();
         
       if (error) throw error;
       
-      if (data) {
-        setCurrentAccessCode(data.code);
+      if (data?.code) {
+        setAccessCode(data.code);
       }
     } catch (error) {
       console.error("Error fetching access code:", error);
     }
   };
-  
-  const handleSetAccessCode = async () => {
-    if (!accessCode.match(/^\d{4}$/)) {
-      toast({
-        title: "Invalid format",
-        description: "Access code must be 4 digits",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      if (currentAccessCode) {
-        // Update existing code
-        const { error } = await supabase
-          .from('access_codes')
-          .update({ code: accessCode })
-          .eq('user_id', user?.id);
-          
-        if (error) throw error;
-      } else {
-        // Insert new code
-        const { error } = await supabase
-          .from('access_codes')
-          .insert({ 
-            user_id: user?.id,
-            code: accessCode
-          });
-          
-        if (error) throw error;
-      }
-      
-      toast({
-        title: "Access code updated",
-        description: "Your access code has been set successfully.",
-      });
-      
-      setCurrentAccessCode(accessCode);
-      setAccessCode("");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
+
+  // Call fetchAccessCode when the component mounts
+  useState(() => {
+    fetchAccessCode();
+  }, []);
+
   return (
     <div className="cyber-panel">
       <h2 className="text-xl font-bold mb-4">Access Code</h2>
-      
-      {currentAccessCode && (
-        <div className="mb-4 p-3 bg-cyber-darkgray/30 rounded">
-          <p className="text-sm text-gray-300">Current access code: <span className="font-mono">{currentAccessCode}</span></p>
+      <p className="text-sm text-gray-300 mb-6">
+        Set or update your 4-digit access code. This code allows quick login to your account.
+      </p>
+
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="access-code">Your 4-Digit Access Code</Label>
+          <div className="flex justify-center mb-4">
+            <InputOTP
+              maxLength={4}
+              value={accessCode}
+              onChange={setAccessCode}
+              render={({ slots }) => (
+                <InputOTPGroup className="gap-4">
+                  {slots.map((slot, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="w-14 h-14 text-2xl bg-cyber-darkgray/50 border-cyber-purple/30"
+                    />
+                  ))}
+                </InputOTPGroup>
+              )}
+            />
+          </div>
         </div>
-      )}
-      
-      <div className="space-y-4">
-        <div className="grid gap-2">
-          <Label htmlFor="accessCode">Set or change your 4-digit access code</Label>
-          <Input 
-            id="accessCode"
-            type="text" 
-            inputMode="numeric" 
-            pattern="[0-9]*" 
-            maxLength={4}
-            value={accessCode} 
-            onChange={(e) => setAccessCode(e.target.value.replace(/\D/g, '').slice(0, 4))} 
-            placeholder="Enter 4 digits"
-            className="bg-cyber-darkgray/50 border-cyber-purple/30"
-          />
-        </div>
-        
+
         <Button
-          onClick={handleSetAccessCode}
-          disabled={isLoading || !accessCode || accessCode.length !== 4}
-          className="w-full"
+          onClick={handleSaveAccessCode}
+          className="w-full cyber-button"
+          disabled={loading}
         >
-          {isLoading ? "Processing..." : (currentAccessCode ? "Update Access Code" : "Set Access Code")}
+          {loading ? "Updating..." : "Save Access Code"}
         </Button>
       </div>
     </div>
