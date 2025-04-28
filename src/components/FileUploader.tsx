@@ -12,11 +12,11 @@ type HeaderMapping = {
 };
 
 const HEADER_MAPPINGS: HeaderMapping = {
-  notes: ['Note title', 'Note content', 'Note date'],
+  notes: ['Title', 'Content', 'Date'],
   npc_relationships: ['NPC name', 'Friendship', 'Trust', 'Lust', 'Love', 'Image', 'Background'],
-  missions: ['Mission name', 'Type', 'Progress', 'Notes', 'Completed'],
-  cyberware: ['Name', 'Type', 'Status', 'Description', 'Installation date'],
-  character_profiles: ['Character name', 'Class', 'Level', 'Alignment', 'Background']
+  missions: ['Name', 'Type', 'Progress', 'Notes', 'Completed'],
+  cyberware: ['Name', 'Type', 'Status', 'Description', 'Rarity', 'Installed'],
+  character_profiles: ['Name', 'Class', 'Lifepath', 'Primary weapons', 'Gear']
 };
 
 interface FileUploaderProps {
@@ -46,15 +46,37 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
     }
 
     try {
+      // Get user's selected character profile id
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('selected_character_profile_id')
+        .eq('id', sessionData.session.user.id)
+        .single();
+        
+      if (!userProfile?.selected_character_profile_id) {
+        toast({
+          title: "No character profile selected",
+          description: "Please select a character profile in settings first.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const characterProfileId = userProfile.selected_character_profile_id;
+
       switch (type) {
         case 'character_profiles':
           const { error: profileError } = await supabase
             .from('character_profiles')
-            .upsert(data.map(profile => ({
-              ...profile,
-              profile_id: sessionData.session.user.id,
+            .update({
+              name: data[0].name,
+              class: data[0].class,
+              lifepath: data[0].lifepath,
+              primary_weapons: data[0].primary_weapons,
+              gear: data[0].gear,
               updated_at: new Date().toISOString()
-            })));
+            })
+            .eq('id', characterProfileId);
           
           if (profileError) throw profileError;
           break;
@@ -63,8 +85,14 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
           const { error: npcError } = await supabase
             .from('npc_relationships')
             .upsert(data.map(npc => ({
-              ...npc,
-              profile_id: sessionData.session.user.id,
+              character_profile_id: characterProfileId,
+              npc_name: npc.npc_name,
+              friendship: Number(npc.friendship) || 0,
+              trust: Number(npc.trust) || 0,
+              lust: Number(npc.lust) || 0,
+              love: Number(npc.love) || 0,
+              image: npc.image,
+              background: npc.background,
               updated_at: new Date().toISOString()
             })));
           
@@ -75,8 +103,9 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
           const { error: notesError } = await supabase
             .from('notes')
             .upsert(data.map(note => ({
-              ...note,
-              profile_id: sessionData.session.user.id,
+              character_profile_id: characterProfileId,
+              title: note.title,
+              content: note.content,
               updated_at: new Date().toISOString()
             })));
           
@@ -87,8 +116,12 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
           const { error: missionsError } = await supabase
             .from('missions')
             .upsert(data.map(mission => ({
-              ...mission,
-              profile_id: sessionData.session.user.id,
+              character_profile_id: characterProfileId,
+              name: mission.name,
+              type: mission.type,
+              progress_percent: Number(mission.progress) || 0,
+              notes: mission.notes,
+              completed: mission.completed === 'true' || mission.completed === true || false,
               updated_at: new Date().toISOString()
             })));
           
@@ -99,8 +132,11 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
           const { error: cyberwareError } = await supabase
             .from('cyberware')
             .upsert(data.map(item => ({
-              ...item,
-              profile_id: sessionData.session.user.id,
+              character_profile_id: characterProfileId,
+              name: item.name,
+              type: item.type,
+              description: item.description,
+              status: item.status,
               updated_at: new Date().toISOString()
             })));
           
@@ -140,7 +176,9 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
       const data = rows.slice(1).map(row => {
         const values = row.split(',').map(value => value.trim());
         return headers.reduce((obj, header, index) => {
-          obj[header.toLowerCase().replace(' ', '_')] = values[index];
+          // Convert header to snake_case for database compatibility
+          const key = header.toLowerCase().replace(/\s+/g, '_');
+          obj[key] = values[index];
           return obj;
         }, {} as any);
       });
@@ -150,7 +188,7 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
       
       toast({
         title: "Import successful",
-        description: `${data.length} ${type} imported successfully.`,
+        description: `${data.length} ${type.replace('_', ' ')} imported successfully.`,
       });
     } catch (error) {
       console.error('Error processing file:', error);

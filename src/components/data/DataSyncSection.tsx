@@ -10,11 +10,21 @@ export function DataSyncSection() {
   const syncToSupabase = async () => {
     setIsSyncing(true);
     try {
-      // Get profile
-      const {
-        data: profileData
-      } = await supabase.from('profiles').insert({}).select().single();
-      if (!profileData?.id) throw new Error('Failed to create profile');
+      // Get user's selected character profile id
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) throw new Error('Not authenticated');
+      
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('selected_character_profile_id')
+        .eq('id', session.user.id)
+        .single();
+        
+      if (!userProfile?.selected_character_profile_id) {
+        throw new Error('No character profile selected. Please select a profile in settings first.');
+      }
+      
+      const characterProfileId = userProfile.selected_character_profile_id;
 
       // Get all local data
       const characterProfile = JSON.parse(localStorage.getItem("v-character-profile") || "{}");
@@ -24,28 +34,27 @@ export function DataSyncSection() {
       const cyberware = JSON.parse(localStorage.getItem("v-cyberware") || "[]");
       const notes = JSON.parse(localStorage.getItem("v-notes") || "[]");
 
-      // Sync character profile
-      await supabase.from('character_profiles').insert({
-        profile_id: profileData.id,
+      // Update character profile
+      await supabase.from('character_profiles').update({
         name: characterProfile.name || 'V',
         lifepath: characterProfile.lifepath || 'Corpo',
         class: characterProfile.class || 'Netrunner',
-        primary_weapons: characterProfile.primary_weapons,
+        primary_weapons: characterProfile.primaryWeapons,
         gear: characterProfile.gear
-      });
+      }).eq('id', characterProfileId);
 
       // Sync relic status
-      await supabase.from('relic_status').insert({
-        profile_id: profileData.id,
+      await supabase.from('relic_status').upsert({
+        profile_id: session.user.id, // This still references the user profile directly
         relic_integrity: relicStatus.integrity || 100,
         johnny_influence: relicStatus.influence || 0
       });
 
       // Sync NPCs
       if (npcs.length > 0) {
-        await supabase.from('npc_relationships').insert(npcs.map(npc => ({
-          profile_id: profileData.id,
-          name: npc.name,
+        await supabase.from('npc_relationships').upsert(npcs.map(npc => ({
+          character_profile_id: characterProfileId,
+          npc_name: npc.name,
           friendship: npc.friendship || 0,
           trust: npc.trust || 0,
           lust: npc.lust || 0,
@@ -57,11 +66,11 @@ export function DataSyncSection() {
 
       // Sync missions
       if (missions.length > 0) {
-        await supabase.from('missions').insert(missions.map(mission => ({
-          profile_id: profileData.id,
+        await supabase.from('missions').upsert(missions.map(mission => ({
+          character_profile_id: characterProfileId,
           name: mission.name,
           type: mission.type,
-          progress: mission.progress || 0,
+          progress_percent: mission.progress,
           notes: mission.notes,
           completed: mission.completed || false
         })));
@@ -69,8 +78,8 @@ export function DataSyncSection() {
 
       // Sync cyberware
       if (cyberware.length > 0) {
-        await supabase.from('cyberware').insert(cyberware.map(ware => ({
-          profile_id: profileData.id,
+        await supabase.from('cyberware').upsert(cyberware.map(ware => ({
+          character_profile_id: characterProfileId,
           name: ware.name,
           type: ware.type,
           description: ware.description,
@@ -80,8 +89,8 @@ export function DataSyncSection() {
 
       // Sync notes
       if (notes.length > 0) {
-        await supabase.from('notes').insert(notes.map(note => ({
-          profile_id: profileData.id,
+        await supabase.from('notes').upsert(notes.map(note => ({
+          character_profile_id: characterProfileId,
           title: note.title,
           content: note.content
         })));
@@ -95,7 +104,7 @@ export function DataSyncSection() {
       console.error('Sync error:', error);
       toast({
         title: "Error",
-        description: "Failed to sync data. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to sync data. Please try again.",
         variant: "destructive"
       });
     } finally {

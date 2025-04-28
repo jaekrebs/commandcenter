@@ -58,14 +58,70 @@ export function DataManagementPanel({ settings }: DataManagementPanelProps) {
   };
 
   const handleImportData = (type: 'notes' | 'npc_relationships' | 'missions' | 'cyberware', data: any[]) => {
-    const storageKey = `v-${type}`;
+    const typeToKeyMap = {
+      'notes': 'v-notes',
+      'npc_relationships': 'v-npcs',
+      'missions': 'v-missions',
+      'cyberware': 'v-cyberware'
+    };
+    
+    const storageKey = typeToKeyMap[type];
     const existingData = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const newData = [...existingData, ...data];
+    
+    // Transform imported data to match local storage format
+    let formattedData;
+    switch(type) {
+      case 'npc_relationships':
+        formattedData = data.map(item => ({
+          id: `npc${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: item.npc_name,
+          friendship: Number(item.friendship) || 0,
+          trust: Number(item.trust) || 0,
+          lust: Number(item.lust) || 0,
+          love: Number(item.love) || 0,
+          image: item.image || "",
+          background: item.background || "bg-gradient-purple"
+        }));
+        break;
+      case 'missions':
+        formattedData = data.map(item => ({
+          id: `mission${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: item.name,
+          type: item.type || "main",
+          progress: Number(item.progress_percent) || 0,
+          notes: item.notes || "",
+          completed: item.completed === 'true' || item.completed === true || false
+        }));
+        break;
+      case 'cyberware':
+        formattedData = data.map(item => ({
+          id: `cyber${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: item.name,
+          type: item.type,
+          description: item.description || "",
+          status: item.status || "",
+          rarity: item.rarity || "common",
+          installed: item.installed === 'true' || item.installed === true || false
+        }));
+        break;
+      case 'notes':
+        formattedData = data.map(item => ({
+          id: `note${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          title: item.title,
+          content: item.content || "",
+          createdAt: new Date().toISOString()
+        }));
+        break;
+      default:
+        formattedData = data;
+    }
+    
+    const newData = [...existingData, ...formattedData];
     localStorage.setItem(storageKey, JSON.stringify(newData));
     
     toast({
-      title: `${type} imported`,
-      description: `Successfully imported ${data.length} ${type}.`,
+      title: `${type.replace('_', ' ')} imported`,
+      description: `Successfully imported ${data.length} ${type.replace('_', ' ')}.`,
     });
   };
 

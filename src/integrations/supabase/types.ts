@@ -58,120 +58,120 @@ export type Database = {
       }
       cyberware: {
         Row: {
+          character_profile_id: string | null
           created_at: string | null
           description: string | null
           id: string
           name: string
-          profile_id: string | null
           status: string | null
           type: string
           updated_at: string | null
         }
         Insert: {
+          character_profile_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           name: string
-          profile_id?: string | null
           status?: string | null
           type: string
           updated_at?: string | null
         }
         Update: {
+          character_profile_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
           name?: string
-          profile_id?: string | null
           status?: string | null
           type?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "cyberware_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: "cyberware_character_profile_id_fkey"
+            columns: ["character_profile_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "character_profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       missions: {
         Row: {
+          character_profile_id: string | null
           completed: boolean | null
           created_at: string | null
           id: string
           name: string
           notes: string | null
-          profile_id: string | null
           progress_percent: number | null
           type: string
           updated_at: string | null
         }
         Insert: {
+          character_profile_id?: string | null
           completed?: boolean | null
           created_at?: string | null
           id?: string
           name: string
           notes?: string | null
-          profile_id?: string | null
           progress_percent?: number | null
           type: string
           updated_at?: string | null
         }
         Update: {
+          character_profile_id?: string | null
           completed?: boolean | null
           created_at?: string | null
           id?: string
           name?: string
           notes?: string | null
-          profile_id?: string | null
           progress_percent?: number | null
           type?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "missions_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: "missions_character_profile_id_fkey"
+            columns: ["character_profile_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "character_profiles"
             referencedColumns: ["id"]
           },
         ]
       }
       notes: {
         Row: {
+          character_profile_id: string | null
           content: string | null
           created_at: string | null
           id: string
-          profile_id: string | null
           title: string
           updated_at: string | null
         }
         Insert: {
+          character_profile_id?: string | null
           content?: string | null
           created_at?: string | null
           id?: string
-          profile_id?: string | null
           title: string
           updated_at?: string | null
         }
         Update: {
+          character_profile_id?: string | null
           content?: string | null
           created_at?: string | null
           id?: string
-          profile_id?: string | null
           title?: string
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "notes_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: "notes_character_profile_id_fkey"
+            columns: ["character_profile_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "character_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -179,6 +179,7 @@ export type Database = {
       npc_relationships: {
         Row: {
           background: string | null
+          character_profile_id: string | null
           created_at: string | null
           friendship: number | null
           id: string
@@ -186,12 +187,12 @@ export type Database = {
           love: number | null
           lust: number | null
           npc_name: string
-          profile_id: string | null
           trust: number | null
           updated_at: string | null
         }
         Insert: {
           background?: string | null
+          character_profile_id?: string | null
           created_at?: string | null
           friendship?: number | null
           id?: string
@@ -199,12 +200,12 @@ export type Database = {
           love?: number | null
           lust?: number | null
           npc_name: string
-          profile_id?: string | null
           trust?: number | null
           updated_at?: string | null
         }
         Update: {
           background?: string | null
+          character_profile_id?: string | null
           created_at?: string | null
           friendship?: number | null
           id?: string
@@ -212,16 +213,15 @@ export type Database = {
           love?: number | null
           lust?: number | null
           npc_name?: string
-          profile_id?: string | null
           trust?: number | null
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "npc_relationships_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: "npc_relationships_character_profile_id_fkey"
+            columns: ["character_profile_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "character_profiles"
             referencedColumns: ["id"]
           },
         ]
