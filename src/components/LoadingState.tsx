@@ -14,7 +14,7 @@ export function LoadingState({
   showRedirect = false 
 }: LoadingStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
+    <div className="flex flex-col items-center justify-center p-8 text-center text-white">
       <div className="animate-pulse mb-4">
         <Loader className="w-12 h-12 text-cyber-purple animate-spin" />
       </div>

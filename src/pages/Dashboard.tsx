@@ -53,7 +53,10 @@ export default function Dashboard() {
         .eq("id", session.user.id)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Profile fetch error:", error);
+        return null;
+      }
       return data;
     }
   });
@@ -74,6 +77,9 @@ export default function Dashboard() {
     setMissions(missions.filter((mission) => mission.id !== id));
   };
 
+  console.log("Dashboard render - userProfile:", userProfile);
+  console.log("isLoadingProfile:", isLoadingProfile);
+
   // Show loading state if still loading profile data
   if (isLoadingProfile) {
     return <LoadingState message="Loading character data..." />;
@@ -81,8 +87,9 @@ export default function Dashboard() {
 
   // Show character selection message if no character is selected
   if (!userProfile?.selected_character_profile_id) {
+    console.log("No character selected, showing redirect");
     return (
-      <div className="container px-4 py-8 mx-auto">
+      <div className="container px-4 py-8 mx-auto text-white">
         <LoadingState 
           message="Access terminal ready" 
           type="character-required"
@@ -93,7 +100,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container px-4 py-8 mx-auto">
+    <div className="container px-4 py-8 mx-auto text-white">
       <h1 className="text-3xl font-bold mb-6 text-white">
         Welcome back to <span className="text-cyber-purple glow-text">Night City</span>
       </h1>

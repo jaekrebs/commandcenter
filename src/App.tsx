@@ -62,23 +62,86 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen bg-cyber-black">
+        <div className="min-h-screen bg-cyber-black text-white">
           <Routes>
             <Route path="/auth" element={<ProtectedRoute><Auth /></ProtectedRoute>} />
-            <Route element={
-              <>
-                <Navigation />
-                <ProtectedRoute><main /></ProtectedRoute>
-              </>
-            }>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/npc-relationships" element={<NPCRelationships />} />
-              <Route path="/missions" element={<Missions />} />
-              <Route path="/cyberware" element={<Cyberware />} />
-              <Route path="/notes" element={<Notes />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
+            <Route 
+              path="/"
+              element={
+                <>
+                  <Navigation />
+                  <div className="pt-16">
+                    <ProtectedRoute><Dashboard /></ProtectedRoute>
+                  </div>
+                </>
+              } 
+            />
+            <Route 
+              path="/npc-relationships" 
+              element={
+                <>
+                  <Navigation />
+                  <div className="pt-16">
+                    <ProtectedRoute><NPCRelationships /></ProtectedRoute>
+                  </div>
+                </>
+              } 
+            />
+            <Route 
+              path="/missions" 
+              element={
+                <>
+                  <Navigation />
+                  <div className="pt-16">
+                    <ProtectedRoute><Missions /></ProtectedRoute>
+                  </div>
+                </>
+              } 
+            />
+            <Route 
+              path="/cyberware" 
+              element={
+                <>
+                  <Navigation />
+                  <div className="pt-16">
+                    <ProtectedRoute><Cyberware /></ProtectedRoute>
+                  </div>
+                </>
+              } 
+            />
+            <Route 
+              path="/notes" 
+              element={
+                <>
+                  <Navigation />
+                  <div className="pt-16">
+                    <ProtectedRoute><Notes /></ProtectedRoute>
+                  </div>
+                </>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <>
+                  <Navigation />
+                  <div className="pt-16">
+                    <ProtectedRoute><Settings /></ProtectedRoute>
+                  </div>
+                </>
+              } 
+            />
+            <Route 
+              path="*" 
+              element={
+                <>
+                  <Navigation />
+                  <div className="pt-16">
+                    <ProtectedRoute><NotFound /></ProtectedRoute>
+                  </div>
+                </>
+              } 
+            />
           </Routes>
         </div>
       </BrowserRouter>
