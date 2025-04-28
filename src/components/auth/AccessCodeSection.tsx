@@ -9,67 +9,11 @@ export function AccessCodeSection() {
   const [accessCode, setAccessCode] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSaveAccessCode = async () => {
-    if (accessCode.length !== 4 || !/^\d{4}$/.test(accessCode)) {
-      toast({
-        title: "Invalid access code",
-        description: "Please enter a valid 4-digit access code",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-      if (!session?.user) throw new Error("No authenticated user found");
-
-      const { data: existing, error: fetchError } = await supabase
-        .from("access_codes")
-        .select("code")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-      if (fetchError) throw fetchError;
-
-      let result;
-      if (existing) {
-        result = await supabase
-          .from("access_codes")
-          .update({ code: accessCode })
-          .eq("user_id", session.user.id);
-      } else {
-        result = await supabase
-          .from("access_codes")
-          .insert([{ user_id: session.user.id, code: accessCode }]);
-      }
-      if (result.error) throw result.error;
-
-      toast({
-        title: "Access code updated",
-        description: "Your access code has been successfully updated.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch existing code on mount
   useEffect(() => {
     (async () => {
       try {
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) throw sessionError;
         if (!session?.user) return;
 
@@ -86,12 +30,45 @@ export function AccessCodeSection() {
     })();
   }, []);
 
+  // Save or update
+  const handleSaveAccessCode = async () => {
+    if (!/^\d{4}$/.test(accessCode)) {
+      toast({ title: "Invalid access code", description: "Please enter a valid 4-digit code", variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session?.user) throw new Error("No authenticated user");
+
+      const { data: existing, error: fetchError } = await supabase
+        .from("access_codes")
+        .select("code")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      if (fetchError) throw fetchError;
+
+      const op = existing
+        ? supabase.from("access_codes").update({ code: accessCode }).eq("user_id", session.user.id)
+        : supabase.from("access_codes").insert([{ user_id: session.user.id, code: accessCode }]);
+      const { error } = await op;
+      if (error) throw error;
+
+      toast({ title: "Access code updated", description: "Your access code has been saved." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="cyber-panel">
       <h2 className="text-xl font-bold mb-4">Access Code</h2>
       <p className="text-sm text-gray-300 mb-6">
-        Set or update your 4-digit access code. This code allows quick login to
-        your account.
+        Set or update your 4-digit access code. This code allows quick login to your account.
       </p>
 
       <div className="space-y-6">
@@ -102,19 +79,17 @@ export function AccessCodeSection() {
               maxLength={4}
               value={accessCode}
               onChange={setAccessCode}
-              render={({ slots }) => (
-                <InputOTPGroup className="gap-4">
-                  {slots.map((slot, idx) => (
-                    <InputOTPSlot
-                      key={idx}
-                      index={idx}       // each slot’s index
-                      {...slot}         // spread char, focus, onChange, etc.
-                      className="w-14 h-14 text-2xl bg-cyber-darkgray/50 border-cyber-purple/30"
-                    />
-                  ))}
-                </InputOTPGroup>
-              )}
-            />
+            >
+              <InputOTPGroup className="gap-4">
+                {[0, 1, 2, 3].map((idx) => (
+                  <InputOTPSlot
+                    key={idx}
+                    index={idx}
+                    className="w-14 h-14 text-2xl bg-cyber-darkgray/50 border-cyber-purple/30"
+                  />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
           </div>
         </div>
 
