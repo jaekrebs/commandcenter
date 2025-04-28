@@ -40,6 +40,9 @@ export function UserLogsPanel() {
     );
   }
 
+  // Debug the structure
+  console.log('User logs data:', logs);
+
   return (
     <ScrollArea className="h-[300px] rounded-md border p-4">
       {logs?.map((log) => (
@@ -47,23 +50,29 @@ export function UserLogsPanel() {
           <p className="text-sm text-gray-400">
             User created: {new Date(log.created_at).toLocaleDateString()}
           </p>
-          {Array.isArray(log.character_profiles) ? (
-            // Handle case where character_profiles is an array
-            log.character_profiles.map((profile, index) => (
-              <p key={index} className="text-xs text-gray-500">
-                Character: {profile.name} ({profile.class} - {profile.lifepath})
-              </p>
-            ))
-          ) : (
-            // Handle case where character_profiles is a single object
-            log.character_profiles && (
-              <p className="text-xs text-gray-500">
-                Character: {log.character_profiles.name} ({log.character_profiles.class} - {log.character_profiles.lifepath})
-              </p>
-            )
-          )}
+          {log.character_profiles && renderCharacterProfiles(log.character_profiles)}
         </div>
       ))}
     </ScrollArea>
+  );
+}
+
+// Helper function to render character profiles regardless of response format
+function renderCharacterProfiles(profiles: any) {
+  if (!profiles) return null;
+  
+  if (Array.isArray(profiles)) {
+    return profiles.map((profile, index) => (
+      <p key={index} className="text-xs text-gray-500">
+        Character: {profile.name} ({profile.class} - {profile.lifepath})
+      </p>
+    ));
+  } 
+  
+  // Handle single object case
+  return (
+    <p className="text-xs text-gray-500">
+      Character: {profiles.name} ({profiles.class} - {profiles.lifepath})
+    </p>
   );
 }
