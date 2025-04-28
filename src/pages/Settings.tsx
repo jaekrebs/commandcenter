@@ -6,7 +6,7 @@ import { DataManagementPanel } from "@/components/settings/DataManagementPanel";
 import { AboutPanel } from "@/components/settings/AboutPanel";
 import { AuthSection } from "@/components/auth/AuthSection";
 import { AccessCodeSection } from "@/components/auth/AccessCodeSection";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("user-settings");
@@ -35,7 +35,7 @@ export default function Settings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
           <div className="cyber-panel">
-            <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="flex flex-col items-stretch border-r border-cyber-purple/20 w-full rounded-none bg-transparent space-y-1">
                 <TabsTrigger 
                   value="user-settings" 
@@ -74,26 +74,38 @@ export default function Settings() {
                   About
                 </TabsTrigger>
               </TabsList>
+              
+              <div className="flex-1 p-4">
+                <TabsContent value="user-settings" className="mt-0">
+                  <UserSettingsPanel 
+                    settings={settings} 
+                    onSettingChange={handleSettingChange}
+                  />
+                </TabsContent>
+                <TabsContent value="access-code" className="mt-0">
+                  <AccessCodeSection />
+                </TabsContent>
+                <TabsContent value="auth" className="mt-0">
+                  <AuthSection />
+                </TabsContent>
+                <TabsContent value="characters" className="mt-0">
+                  <CharacterProfilesSection />
+                </TabsContent>
+                <TabsContent value="data" className="mt-0">
+                  <DataManagementPanel 
+                    settings={settings}
+                  />
+                </TabsContent>
+                <TabsContent value="about" className="mt-0">
+                  <AboutPanel />
+                </TabsContent>
+              </div>
             </Tabs>
           </div>
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          {activeTab === "user-settings" && (
-            <UserSettingsPanel 
-              settings={settings} 
-              onSettingChange={handleSettingChange}
-            />
-          )}
-          {activeTab === "access-code" && <AccessCodeSection />}
-          {activeTab === "auth" && <AuthSection />}
-          {activeTab === "characters" && <CharacterProfilesSection />}
-          {activeTab === "data" && (
-            <DataManagementPanel 
-              settings={settings}
-            />
-          )}
-          {activeTab === "about" && <AboutPanel />}
+          {/* This section is now redundant since we're using TabsContent */}
         </div>
       </div>
     </div>
