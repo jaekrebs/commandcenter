@@ -155,6 +155,9 @@ export function UserSettingsPanel({ settings, onSettingChange }: UserSettingsPan
             <option value="blue">Cyber Blue</option>
             <option value="pink">Cyber Pink</option>
             <option value="yellow">Cyber Yellow</option>
+            <option value="green">Cyber Green</option>
+            <option value="teal">Cyber Teal</option>
+            <option value="orange">Cyber Orange</option>
           </select>
         </div>
         

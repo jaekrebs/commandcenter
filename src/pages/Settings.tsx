@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserSettingsPanel } from "../components/settings/UserSettingsPanel";
@@ -6,6 +7,7 @@ import { AboutPanel } from "../components/settings/AboutPanel";
 import { AuthSection } from "../components/auth/AuthSection";
 import { DataSyncSection } from "../components/data/DataSyncSection";
 import { CharacterProfilesSection } from "../components/settings/CharacterProfilesSection";
+import { toast } from "@/components/ui/use-toast";
 
 type SettingsData = {
   username: string;
@@ -43,6 +45,11 @@ export default function Settings() {
     };
     
     fetchProfile();
+    
+    // Apply theme on component mount
+    document.documentElement.className = settings.darkThemeVariant === 'purple' 
+      ? '' 
+      : `theme-${settings.darkThemeVariant}`;
   }, []);
 
   const handleSettingChange = (
@@ -51,10 +58,24 @@ export default function Settings() {
     const { name, value, type } = e.target as HTMLInputElement;
     const newValue = type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
     
-    setSettings({
+    const newSettings = {
       ...settings,
       [name]: type === "number" ? Number(value) : newValue,
-    });
+    };
+    
+    setSettings(newSettings);
+    
+    // Apply theme immediately when changed
+    if (name === 'darkThemeVariant') {
+      document.documentElement.className = value === 'purple' 
+        ? '' 
+        : `theme-${value}`;
+      
+      toast({
+        title: "Theme Updated",
+        description: `Theme changed to ${value.charAt(0).toUpperCase() + value.slice(1)}`,
+      });
+    }
   };
 
   return (

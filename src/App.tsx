@@ -12,6 +12,7 @@ import Missions from "./pages/Missions";
 import Cyberware from "./pages/Cyberware";
 import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { Navigation } from "./components/Navigation";
@@ -127,6 +128,17 @@ const App = () => (
                   <Navigation />
                   <div className="pt-16">
                     <ProtectedRoute><Settings /></ProtectedRoute>
+                  </div>
+                </>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <>
+                  <Navigation />
+                  <div className="pt-16">
+                    <ProtectedRoute><Admin /></ProtectedRoute>
                   </div>
                 </>
               } 

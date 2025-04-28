@@ -1,5 +1,7 @@
-import { useLocation } from "react-router-dom";
+
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
@@ -12,13 +14,17 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
+    <div className="container mx-auto px-4 py-16 text-center">
+      <div className="cyber-panel max-w-md mx-auto p-8">
+        <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-cyber-yellow" />
+        <h1 className="text-4xl font-bold mb-4 text-cyber-purple">404</h1>
+        <p className="text-xl text-gray-300 mb-6">Access Denied: Route not found</p>
+        <p className="text-gray-400 mb-6">
+          The neural pathway to <span className="text-cyber-pink">{location.pathname}</span> is unavailable or restricted
+        </p>
+        <Link to="/" className="cyber-button inline-block">
+          Return to Dashboard
+        </Link>
       </div>
     </div>
   );
