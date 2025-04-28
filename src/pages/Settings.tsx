@@ -1,15 +1,22 @@
 
 import { useState } from "react";
-import { CharacterProfilesSection } from "@/components/settings/CharacterProfilesSection";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { UserSettingsPanel } from "@/components/settings/UserSettingsPanel";
+import { CharacterProfilesSection } from "@/components/settings/CharacterProfilesSection";
 import { DataManagementPanel } from "@/components/settings/DataManagementPanel";
 import { AboutPanel } from "@/components/settings/AboutPanel";
-import { AuthSection } from "@/components/auth/AuthSection";
 import { AccessCodeSection } from "@/components/auth/AccessCodeSection";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { AuthSection } from "@/components/auth/AuthSection";
+import { useUserRole } from "@/hooks/useUserRole";
+import { UserLogsPanel } from "@/components/admin/UserLogsPanel";
+import { SystemUpdatePanel } from "@/components/admin/SystemUpdatePanel";
+import { RoleManagementPanel } from "@/components/admin/RoleManagementPanel";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("user-settings");
+  const { data: userRole } = useUserRole();
+  const isAdmin = userRole === 'super_admin' || userRole === 'admin';
+  
   const [settings, setSettings] = useState({
     username: "",
     autoSaveInterval: 5,
@@ -32,81 +39,98 @@ export default function Settings() {
         <span className="text-cyber-yellow glow-text">Settings</span>
       </h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <div className="cyber-panel">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="flex flex-col items-stretch border-r border-cyber-purple/20 w-full rounded-none bg-transparent space-y-1">
+      <div className="grid grid-cols-1 gap-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="cyber-panel">
+          <div className="flex flex-col md:flex-row">
+            <TabsList className="flex flex-col md:w-64 items-stretch bg-transparent space-y-1 p-2 h-auto">
+              <TabsTrigger 
+                value="user-settings" 
+                className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+              >
+                User Settings
+              </TabsTrigger>
+              <TabsTrigger 
+                value="access-code" 
+                className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+              >
+                Access Code
+              </TabsTrigger>
+              <TabsTrigger 
+                value="auth" 
+                className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+              >
+                Authentication
+              </TabsTrigger>
+              <TabsTrigger 
+                value="characters" 
+                className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+              >
+                Character Profiles
+              </TabsTrigger>
+              <TabsTrigger 
+                value="data" 
+                className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+              >
+                Data Management
+              </TabsTrigger>
+              <TabsTrigger 
+                value="about" 
+                className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+              >
+                About
+              </TabsTrigger>
+              {isAdmin && (
                 <TabsTrigger 
-                  value="user-settings" 
+                  value="admin" 
                   className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
                 >
-                  User Settings
+                  Admin Settings
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="access-code" 
-                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
-                >
-                  Access Code
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="auth" 
-                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
-                >
-                  Authentication
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="characters" 
-                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
-                >
-                  Character Profiles
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="data" 
-                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
-                >
-                  Data Management
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="about" 
-                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
-                >
-                  About
-                </TabsTrigger>
-              </TabsList>
+              )}
+            </TabsList>
+            
+            <div className="flex-1 p-4 border-l border-cyber-purple/20">
+              <TabsContent value="user-settings" className="mt-0 space-y-4">
+                <UserSettingsPanel 
+                  settings={settings} 
+                  onSettingChange={handleSettingChange}
+                />
+              </TabsContent>
               
-              <div className="flex-1 p-4">
-                <TabsContent value="user-settings" className="mt-0">
-                  <UserSettingsPanel 
-                    settings={settings} 
-                    onSettingChange={handleSettingChange}
-                  />
-                </TabsContent>
-                <TabsContent value="access-code" className="mt-0">
-                  <AccessCodeSection />
-                </TabsContent>
-                <TabsContent value="auth" className="mt-0">
-                  <AuthSection />
-                </TabsContent>
-                <TabsContent value="characters" className="mt-0">
-                  <CharacterProfilesSection />
-                </TabsContent>
-                <TabsContent value="data" className="mt-0">
-                  <DataManagementPanel 
-                    settings={settings}
-                  />
-                </TabsContent>
-                <TabsContent value="about" className="mt-0">
-                  <AboutPanel />
-                </TabsContent>
-              </div>
-            </Tabs>
-          </div>
-        </div>
+              <TabsContent value="access-code" className="mt-0 space-y-4">
+                <AccessCodeSection />
+              </TabsContent>
+              
+              <TabsContent value="auth" className="mt-0 space-y-4">
+                <AuthSection />
+              </TabsContent>
+              
+              <TabsContent value="characters" className="mt-0 space-y-4">
+                <CharacterProfilesSection />
+              </TabsContent>
+              
+              <TabsContent value="data" className="mt-0 space-y-4">
+                <DataManagementPanel 
+                  settings={settings}
+                />
+              </TabsContent>
+              
+              <TabsContent value="about" className="mt-0 space-y-4">
+                <AboutPanel />
+              </TabsContent>
 
-        <div className="lg:col-span-2 space-y-6">
-          {/* This section is now redundant since we're using TabsContent */}
-        </div>
+              {isAdmin && (
+                <TabsContent value="admin" className="mt-0 space-y-4">
+                  <div className="space-y-6">
+                    <SystemUpdatePanel />
+                    <UserLogsPanel />
+                    <RoleManagementPanel />
+                  </div>
+                </TabsContent>
+              )}
+            </div>
+          </div>
+        </Tabs>
       </div>
     </div>
   );

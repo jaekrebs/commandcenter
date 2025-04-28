@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, Shield, LogIn, LogOut, Sun, Moon } from "lucide-react";
+import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, Shield, LogIn, LogOut, Sun, Moon, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/components/ui/use-toast";
@@ -45,6 +44,7 @@ export function Navigation() {
     { name: "Missions", path: "/missions", icon: <FileText size={18} /> },
     { name: "Gear", path: "/gear", icon: <Cpu size={18} /> },
     { name: "Notes", path: "/notes", icon: <FileEdit size={18} /> },
+    { name: "Uploads", path: "/uploads", icon: <Upload size={18} /> },
     { name: "Settings", path: "/settings", icon: <Settings size={18} /> },
     ...(isAdmin ? [
       { name: "Admin", path: "/admin", icon: <Shield size={18} /> }
