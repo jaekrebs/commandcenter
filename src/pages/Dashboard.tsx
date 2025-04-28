@@ -17,7 +17,7 @@ export default function Dashboard() {
             id: "mission1",
             name: "The Heist",
             type: "main",
-            progress: 100,
+            progress_percent: 100,
             notes: "Completed the Konpeki Plaza heist with Jackie.",
             completed: true,
           },
@@ -25,7 +25,7 @@ export default function Dashboard() {
             id: "mission2",
             name: "Playing for Time",
             type: "main",
-            progress: 60,
+            progress_percent: 60,
             notes: "Met with Takemura, investigating leads on Hellman.",
             completed: false,
           },
@@ -33,7 +33,7 @@ export default function Dashboard() {
             id: "mission3",
             name: "The Hunt",
             type: "side",
-            progress: 75,
+            progress_percent: 75,
             notes: "Helping River track down a serial killer.",
             completed: false,
           },
@@ -120,7 +120,7 @@ export default function Dashboard() {
                   if (a.completed && !b.completed) return 1;
                   if (!a.completed && b.completed) return -1;
                   // Then sort by progress (descending)
-                  return b.progress - a.progress;
+                  return b.progress_percent - a.progress_percent;
                 })
                 .slice(0, 3)
                 .map((mission) => (

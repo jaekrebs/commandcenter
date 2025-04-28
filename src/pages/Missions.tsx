@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { MissionCard, Mission } from "../components/MissionCard";
 import { Plus } from "lucide-react";
@@ -15,7 +16,7 @@ export default function Missions() {
             id: "mission1",
             name: "The Heist",
             type: "main",
-            progress: 100,
+            progress_percent: 100,
             notes: "Completed the Konpeki Plaza heist with Jackie.",
             completed: true,
           },
@@ -23,7 +24,7 @@ export default function Missions() {
             id: "mission2",
             name: "Playing for Time",
             type: "main",
-            progress: 60,
+            progress_percent: 60,
             notes: "Met with Takemura, investigating leads on Hellman.",
             completed: false,
           },
@@ -31,7 +32,7 @@ export default function Missions() {
             id: "mission3",
             name: "The Hunt",
             type: "side",
-            progress: 75,
+            progress_percent: 75,
             notes: "Helping River track down a serial killer.",
             completed: false,
           },
@@ -39,7 +40,7 @@ export default function Missions() {
             id: "mission4",
             name: "The Pickup",
             type: "main",
-            progress: 100,
+            progress_percent: 100,
             notes: "Retrieved the Flathead from Maelstrom.",
             completed: true,
           },
@@ -47,7 +48,7 @@ export default function Missions() {
             id: "mission5",
             name: "Automatic Love",
             type: "main",
-            progress: 90,
+            progress_percent: 90,
             notes: "Investigating Evelyn's connections at Clouds.",
             completed: false,
           },
@@ -55,7 +56,7 @@ export default function Missions() {
             id: "mission6",
             name: "Pyramid Song",
             type: "side",
-            progress: 50,
+            progress_percent: 50,
             notes: "Diving with Judy to explore sunken town.",
             completed: false,
           },
@@ -63,7 +64,7 @@ export default function Missions() {
             id: "mission7",
             name: "Epistrophy",
             type: "gig",
-            progress: 30,
+            progress_percent: 30,
             notes: "Helping Delamain retrieve his rogue taxis.",
             completed: false,
           },
@@ -75,7 +76,7 @@ export default function Missions() {
   const [newMission, setNewMission] = useState<Omit<Mission, "id">>({
     name: "",
     type: "main",
-    progress: 0,
+    progress_percent: 0,
     notes: "",
     completed: false,
   });
@@ -126,7 +127,7 @@ export default function Missions() {
       setNewMission({
         name: "",
         type: "main",
-        progress: 0,
+        progress_percent: 0,
         notes: "",
         completed: false,
       });
@@ -213,11 +214,11 @@ export default function Missions() {
                 min="0"
                 max="100"
                 className="bg-cyber-black border border-cyber-purple/30 text-white rounded px-3 py-2 w-full focus:outline-none focus:ring-1 focus:ring-cyber-purple"
-                value={newMission.progress}
+                value={newMission.progress_percent}
                 onChange={(e) =>
                   setNewMission({
                     ...newMission,
-                    progress: Number(e.target.value),
+                    progress_percent: Number(e.target.value),
                   })
                 }
               />
