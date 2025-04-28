@@ -180,13 +180,14 @@ const handleDataSync = async (type: FileType, data: any[], characterProfileId: s
       
     case 'cyberware':
       await supabase
-        .from('cyberware')
+        .from('gear') // Changed from 'cyberware' to 'gear'
         .upsert(data.map(item => ({
           character_profile_id: characterProfileId,
           name: item.name,
           type: item.type,
           description: item.description,
-          status: item.status,
+          rarity: item.rarity,
+          installed: item.installed === 'true' || item.installed === true || false,
           updated_at: new Date().toISOString()
         })));
       break;

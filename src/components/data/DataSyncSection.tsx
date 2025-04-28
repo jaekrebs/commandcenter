@@ -76,9 +76,9 @@ export function DataSyncSection() {
         })));
       }
 
-      // Sync cyberware
+      // Sync gear (previously cyberware)
       if (cyberware.length > 0) {
-        await supabase.from('cyberware').upsert(cyberware.map(ware => ({
+        await supabase.from('gear').upsert(cyberware.map(ware => ({
           character_profile_id: characterProfileId,
           name: ware.name,
           type: ware.type,
