@@ -1,126 +1,20 @@
 
 import { useState, useEffect } from "react";
-import { NPCCard, NPCRelationship } from "../components/NPCCard";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { NPCCard } from "../components/NPCCard";
 import { LoadingState } from "@/components/LoadingState";
-import { toast } from "@/hooks/use-toast";
+import { useNPCs } from "@/hooks/useNPCs";
 
 export default function NPCRelationships() {
-  // Fetch user profile to check if character is selected
-  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ["user-profile"],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return null;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("selected_character_profile_id")
-        .eq("id", session.user.id)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Fetch NPC relationships from the database
-  const { data: npcData, isLoading: isLoadingNPCs } = useQuery({
-    queryKey: ["npc-relationships", userProfile?.selected_character_profile_id],
-    enabled: !!userProfile?.selected_character_profile_id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("npc_relationships")
-        .select("*")
-        .eq("character_profile_id", userProfile?.selected_character_profile_id);
-      
-      if (error) throw error;
-      return data as NPCRelationship[];
-    }
-  });
-
-  const [npcs, setNPCs] = useState<NPCRelationship[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const { npcs, isLoading, hasCharacter, updateNPC } = useNPCs();
 
-  // Initialize NPCs from database data or local storage if no data in DB yet
-  useEffect(() => {
-    if (npcData && npcData.length > 0) {
-      setNPCs(npcData);
-    } else {
-      // Use local storage as fallback if no database data yet
-      const savedNPCs = localStorage.getItem("v-npcs");
-      if (savedNPCs) {
-        // Parse and adapt the stored format if needed
-        const storedNPCs = JSON.parse(savedNPCs);
-        // Transform any old format data to match the new schema
-        const adaptedNPCs = storedNPCs.map((npc: any) => ({
-          ...npc,
-          npc_name: npc.npc_name || npc.name, // Ensure we have npc_name
-        }));
-        setNPCs(adaptedNPCs);
-      }
-    }
-  }, [npcData]);
-
-  // Save changes to local storage for offline persistence
-  useEffect(() => {
-    if (npcs.length > 0) {
-      localStorage.setItem("v-npcs", JSON.stringify(npcs));
-    }
-  }, [npcs]);
-
-  const handleUpdateNPC = async (updatedNPC: NPCRelationship) => {
-    // Update the local state first for optimistic UI update
-    setNPCs(npcs.map((npc) => (npc.id === updatedNPC.id ? updatedNPC : npc)));
-
-    // If we have a selected character profile, update in database
-    if (userProfile?.selected_character_profile_id) {
-      try {
-        // Make sure NPC has character_profile_id set
-        const npcToUpdate = {
-          ...updatedNPC,
-          character_profile_id: updatedNPC.character_profile_id || userProfile.selected_character_profile_id
-        };
-        
-        const { error } = await supabase
-          .from("npc_relationships")
-          .upsert({
-            id: npcToUpdate.id,
-            npc_name: npcToUpdate.npc_name,
-            friendship: npcToUpdate.friendship,
-            trust: npcToUpdate.trust,
-            lust: npcToUpdate.lust,
-            love: npcToUpdate.love,
-            image: npcToUpdate.image,
-            background: npcToUpdate.background,
-            character_profile_id: npcToUpdate.character_profile_id,
-            updated_at: new Date().toISOString()
-          });
-
-        if (error) throw error;
-      } catch (error) {
-        console.error("Failed to update NPC relationship:", error);
-        toast({
-          title: "Update failed",
-          description: "Failed to save relationship changes",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-
-  const filteredNPCs = npcs.filter((npc) =>
-    npc.npc_name ? npc.npc_name.toLowerCase().includes(searchTerm.toLowerCase()) : false
-  );
-
-  // Show loading state if still loading profile or NPCs data
-  if (isLoadingProfile || isLoadingNPCs) {
+  // Show loading state while fetching NPCs data
+  if (isLoading) {
     return <LoadingState message="Loading NPC relationship data..." />;
   }
 
   // Show character selection message if no character is selected
-  if (!userProfile?.selected_character_profile_id) {
+  if (!hasCharacter) {
     return (
       <div className="container px-4 py-8 mx-auto">
         <LoadingState 
@@ -131,6 +25,10 @@ export default function NPCRelationships() {
       </div>
     );
   }
+
+  const filteredNPCs = npcs.filter((npc) =>
+    npc.npc_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container px-4 py-8 mx-auto">
@@ -162,7 +60,7 @@ export default function NPCRelationships() {
             <NPCCard 
               key={npc.id} 
               npc={npc} 
-              onUpdate={handleUpdateNPC} 
+              onUpdate={updateNPC} 
             />
           ))
         ) : (
