@@ -1,19 +1,16 @@
 
 import { useState } from "react";
-import { PlusCircle, Edit, Trash } from "lucide-react";
 import { LoadingState } from "@/components/LoadingState";
 import { useNotes, Note } from "@/hooks/useNotes";
+import { NoteSidebar } from "@/components/notes/NoteSidebar";
+import { NoteEditor } from "@/components/notes/NoteEditor";
+import { NoteViewer } from "@/components/notes/NoteViewer";
 
 export default function Notes() {
   const { notes, isLoading, addNote, updateNote, deleteNote, hasCharacter } = useNotes();
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
-  const [isAddingNote, setIsAddingNote] = useState(false);
-  const [newNote, setNewNote] = useState<Omit<Note, "id" | "created_at" | "updated_at">>({
-    title: "",
-    content: "",
-  });
 
   // Set the first note as active when notes load or change
   useState(() => {
@@ -42,35 +39,6 @@ export default function Notes() {
     }
   };
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-  };
-
-  const handleAddNote = () => {
-    if (newNote.title.trim()) {
-      addNote(newNote);
-      setNewNote({ title: "", content: "" });
-      setIsAddingNote(false);
-    }
-  };
-
-  const handleDeleteNote = (id: string) => {
-    deleteNote(id);
-    if (activeNote?.id === id) {
-      const updatedNotes = notes.filter((note) => note.id !== id);
-      setActiveNote(updatedNotes[0] || null);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
   // Show loading state while fetching notes
   if (isLoading) {
     return <LoadingState message="Loading notes data..." />;
@@ -97,94 +65,13 @@ export default function Notes() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
-          <div className="cyber-panel">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Notes</h2>
-              <button
-                onClick={() => setIsAddingNote(true)}
-                className="text-cyber-blue hover:text-cyber-purple transition-colors"
-                disabled={isAddingNote}
-              >
-                <PlusCircle size={20} />
-              </button>
-            </div>
-
-            {isAddingNote && (
-              <div className="mb-4 border-b border-cyber-purple/20 pb-4">
-                <input
-                  type="text"
-                  placeholder="Note title"
-                  value={newNote.title}
-                  onChange={(e) =>
-                    setNewNote({ ...newNote, title: e.target.value })
-                  }
-                  className="bg-cyber-black border border-cyber-purple/30 text-white rounded px-3 py-2 w-full mb-2 focus:outline-none focus:ring-1 focus:ring-cyber-purple"
-                />
-                <textarea
-                  placeholder="Note content"
-                  value={newNote.content}
-                  onChange={(e) =>
-                    setNewNote({ ...newNote, content: e.target.value })
-                  }
-                  className="bg-cyber-black border border-cyber-purple/30 text-white rounded px-3 py-2 w-full h-20 mb-2 focus:outline-none focus:ring-1 focus:ring-cyber-purple"
-                />
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={() => setIsAddingNote(false)}
-                    className="cyber-button text-xs"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleAddNote}
-                    className="cyber-button-accent text-xs"
-                    disabled={!newNote.title.trim()}
-                  >
-                    Add Note
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-none">
-              {notes.length === 0 ? (
-                <p className="text-gray-400 text-center py-4">
-                  No notes yet. Create your first note.
-                </p>
-              ) : (
-                notes.map((note) => (
-                  <div
-                    key={note.id}
-                    className={`p-3 rounded cursor-pointer transition-all hover:bg-cyber-purple/10 ${
-                      activeNote?.id === note.id
-                        ? "border border-cyber-purple/50 bg-cyber-purple/10"
-                        : "border border-cyber-darkgray"
-                    }`}
-                    onClick={() => handleNoteClick(note)}
-                  >
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-medium text-white">{note.title}</h3>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteNote(note.id);
-                        }}
-                        className="text-gray-500 hover:text-cyber-red transition-colors"
-                      >
-                        <Trash size={14} />
-                      </button>
-                    </div>
-                    <p className="text-gray-400 text-sm line-clamp-2 mt-1">
-                      {note.content}
-                    </p>
-                    <p className="text-gray-500 text-xs mt-2">
-                      {formatDate(note.created_at)}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          <NoteSidebar
+            notes={notes}
+            activeNote={activeNote}
+            onNoteClick={handleNoteClick}
+            onDeleteNote={deleteNote}
+            onAddNote={addNote}
+          />
         </div>
 
         <div className="md:col-span-2">
@@ -194,81 +81,19 @@ export default function Notes() {
                 <p className="text-gray-400 mb-4">
                   Select a note or create a new one
                 </p>
-                <button
-                  onClick={() => setIsAddingNote(true)}
-                  className="cyber-button flex items-center gap-2"
-                >
-                  <PlusCircle size={16} />
-                  <span>New Note</span>
-                </button>
               </div>
             ) : isEditing && editingNote ? (
-              <div>
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    value={editingNote.title}
-                    onChange={(e) =>
-                      setEditingNote({
-                        ...editingNote,
-                        title: e.target.value,
-                      })
-                    }
-                    className="bg-cyber-black border border-cyber-purple/30 text-white text-lg font-bold rounded px-3 py-2 w-full mb-2 focus:outline-none focus:ring-1 focus:ring-cyber-purple"
-                  />
-                  <div className="text-sm text-gray-400">
-                    {formatDate(editingNote.created_at)}
-                  </div>
-                </div>
-                <textarea
-                  value={editingNote.content}
-                  onChange={(e) =>
-                    setEditingNote({
-                      ...editingNote,
-                      content: e.target.value,
-                    })
-                  }
-                  className="bg-cyber-black border border-cyber-purple/30 text-white rounded px-3 py-2 w-full h-64 focus:outline-none focus:ring-1 focus:ring-cyber-purple"
-                />
-                <div className="flex justify-end gap-2 mt-4">
-                  <button
-                    onClick={handleCancelEdit}
-                    className="cyber-button text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveEdit}
-                    className="cyber-button-accent text-sm"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
+              <NoteEditor
+                note={editingNote}
+                onSave={handleSaveEdit}
+                onCancel={() => setIsEditing(false)}
+                onChange={setEditingNote}
+              />
             ) : (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white">
-                      {activeNote.title}
-                    </h2>
-                    <div className="text-sm text-gray-400">
-                      {formatDate(activeNote.created_at)}
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleEditClick}
-                    className="text-cyber-blue hover:text-cyber-purple transition-colors"
-                  >
-                    <Edit size={18} />
-                  </button>
-                </div>
-                <div className="prose prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap text-gray-300">
-                    {activeNote.content}
-                  </p>
-                </div>
-              </div>
+              <NoteViewer 
+                note={activeNote} 
+                onEdit={handleEditClick} 
+              />
             )}
           </div>
         </div>
