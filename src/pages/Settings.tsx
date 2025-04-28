@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
-import { toast } from "../components/ui/use-toast";
-import { Check } from "lucide-react";
-import { FileUploader } from "../components/FileUploader";
+import { supabase } from "@/integrations/supabase/client";
+import { UserSettingsPanel } from "../components/settings/UserSettingsPanel";
+import { DataManagementPanel } from "../components/settings/DataManagementPanel";
+import { AboutPanel } from "../components/settings/AboutPanel";
 import { AuthSection } from "../components/auth/AuthSection";
 import { DataSyncSection } from "../components/data/DataSyncSection";
-import { supabase } from "@/integrations/supabase/client";
 
 type SettingsData = {
   username: string;
@@ -44,7 +45,7 @@ export default function Settings() {
     fetchProfile();
   }, []);
 
-  const handleChange = (
+  const handleSettingChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -53,70 +54,6 @@ export default function Settings() {
     setSettings({
       ...settings,
       [name]: type === "number" ? Number(value) : newValue,
-    });
-  };
-
-  const handleSaveSettings = () => {
-    localStorage.setItem("v-settings", JSON.stringify(settings));
-    toast({
-      title: "Settings saved",
-      description: "Your preferences have been updated.",
-    });
-  };
-
-  const handleExportData = () => {
-    const exportData = {
-      profile: JSON.parse(localStorage.getItem("v-character-profile") || "{}"),
-      relicStatus: JSON.parse(localStorage.getItem("v-relic-status") || "{}"),
-      npcs: JSON.parse(localStorage.getItem("v-npcs") || "[]"),
-      missions: JSON.parse(localStorage.getItem("v-missions") || "[]"),
-      cyberware: JSON.parse(localStorage.getItem("v-cyberware") || "[]"),
-      notes: JSON.parse(localStorage.getItem("v-notes") || "[]"),
-      settings: settings,
-    };
-
-    const dataStr = JSON.stringify(exportData, null, 2);
-    const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-
-    const exportFileDefaultName = `v-dashboard-backup-${new Date().toISOString().slice(0, 10)}.json`;
-
-    const linkElement = document.createElement("a");
-    linkElement.setAttribute("href", dataUri);
-    linkElement.setAttribute("download", exportFileDefaultName);
-    linkElement.click();
-    
-    toast({
-      title: "Data exported",
-      description: "Your data has been exported successfully.",
-    });
-  };
-
-  const handleClearLocalData = () => {
-    if (confirm("Are you sure you want to clear all local data? This cannot be undone!")) {
-      localStorage.removeItem("v-character-profile");
-      localStorage.removeItem("v-relic-status");
-      localStorage.removeItem("v-npcs");
-      localStorage.removeItem("v-missions");
-      localStorage.removeItem("v-cyberware");
-      localStorage.removeItem("v-notes");
-      
-      toast({
-        title: "Data cleared",
-        description: "All local data has been removed. Refresh to start fresh.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleImportData = (type: 'notes' | 'npcs' | 'missions' | 'cyberware', data: any[]) => {
-    const storageKey = `v-${type}`;
-    const existingData = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const newData = [...existingData, ...data];
-    localStorage.setItem(storageKey, JSON.stringify(newData));
-    
-    toast({
-      title: `${type} imported`,
-      description: `Successfully imported ${data.length} ${type}.`,
     });
   };
 
@@ -129,176 +66,21 @@ export default function Settings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="col-span-2">
           <div className="space-y-6">
-            <div className="cyber-panel">
-              <h2 className="text-xl font-bold mb-4">User Settings</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Username</label>
-                  <input
-                    type="text"
-                    name="username"
-                    value={settings.username}
-                    disabled
-                    className="bg-cyber-black/50 border border-cyber-purple/30 text-white rounded px-3 py-2 w-full focus:outline-none cursor-not-allowed opacity-70"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Auto-save interval (minutes)</label>
-                  <input
-                    type="number"
-                    name="autoSaveInterval"
-                    min="1"
-                    max="60"
-                    value={settings.autoSaveInterval}
-                    onChange={handleChange}
-                    className="bg-cyber-black border border-cyber-purple/30 text-white rounded px-3 py-2 w-full focus:outline-none focus:ring-1 focus:ring-cyber-purple"
-                  />
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="notifications"
-                    name="notificationsEnabled"
-                    checked={settings.notificationsEnabled}
-                    onChange={handleChange}
-                    className="rounded bg-cyber-black border-cyber-purple/30 focus:ring-cyber-purple text-cyber-purple"
-                  />
-                  <label htmlFor="notifications" className="text-sm text-gray-300">
-                    Enable notifications
-                  </label>
-                </div>
-                
-                <div>
-                  <label className="block text-sm text-gray-400 mb-1">Theme Variant</label>
-                  <select
-                    name="darkThemeVariant"
-                    value={settings.darkThemeVariant}
-                    onChange={handleChange}
-                    className="bg-cyber-black border border-cyber-purple/30 text-white rounded px-3 py-2 w-full focus:outline-none focus:ring-1 focus:ring-cyber-purple"
-                  >
-                    <option value="purple">Cyber Purple</option>
-                    <option value="blue">Cyber Blue</option>
-                    <option value="pink">Cyber Pink</option>
-                    <option value="yellow">Cyber Yellow</option>
-                  </select>
-                </div>
-                
-                <div className="flex justify-end">
-                  <button onClick={handleSaveSettings} className="cyber-button flex items-center gap-2">
-                    <Check size={16} />
-                    <span>Save Settings</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="cyber-panel">
-              <h2 className="text-xl font-bold mb-4">Data Management</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-medium mb-2">Export Data</h3>
-                  <p className="text-sm text-gray-300 mb-3">
-                    Export all your character data, including profile, NPCs, missions, cyberware, and notes to a JSON file.
-                  </p>
-                  <button onClick={handleExportData} className="cyber-button text-sm">
-                    Export to JSON
-                  </button>
-                </div>
-                
-                <div className="pt-3 border-t border-cyber-purple/20">
-                  <h3 className="text-lg font-medium mb-2">Clear Local Data</h3>
-                  <p className="text-sm text-cyber-red mb-3">
-                    Warning: This will permanently delete all locally stored data. Make sure to export your data first!
-                  </p>
-                  <button onClick={handleClearLocalData} className="text-sm border border-cyber-red text-cyber-red px-4 py-2 rounded hover:bg-cyber-red/10">
-                    Clear All Data
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="cyber-panel mt-6">
-            <h2 className="text-xl font-bold mb-4">Import Data</h2>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-medium mb-2">Import Notes</h3>
-                <FileUploader type="notes" onDataImported={(data) => handleImportData('notes', data)} />
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-medium mb-2">Import NPCs</h3>
-                <FileUploader type="npcs" onDataImported={(data) => handleImportData('npcs', data)} />
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-medium mb-2">Import Missions</h3>
-                <FileUploader type="missions" onDataImported={(data) => handleImportData('missions', data)} />
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-medium mb-2">Import Cyberware</h3>
-                <FileUploader type="cyberware" onDataImported={(data) => handleImportData('cyberware', data)} />
-              </div>
-            </div>
+            <UserSettingsPanel 
+              settings={settings}
+              onSettingChange={handleSettingChange}
+            />
+            <DataManagementPanel settings={settings} />
           </div>
         </div>
         
         <div>
-          <div className="cyber-panel">
-            <h2 className="text-xl font-bold mb-4">Authentication</h2>
-            <p className="text-sm text-gray-300 mb-4">
-              Manage your account authentication settings.
-            </p>
-            <button 
-              className="cyber-button text-sm"
-              onClick={() => supabase.auth.signOut().then(() => {
-                toast({
-                  title: "Signed out",
-                  description: "You have been successfully signed out."
-                });
-                window.location.href = "/";
-              })}
-            >
-              Sign Out
-            </button>
+          <AuthSection />
+          <div className="mt-6">
+            <DataSyncSection />
           </div>
-          
-          <div className="cyber-panel mt-6">
-            <h2 className="text-xl font-bold mb-4">Data Sync</h2>
-            <p className="text-sm text-gray-300 mb-4">
-              Sync your local data with the cloud.
-            </p>
-            <button 
-              className="cyber-button text-sm"
-              onClick={() => {
-                toast({
-                  title: "Coming Soon",
-                  description: "This feature will be available in a future update."
-                });
-              }}
-            >
-              Sync Data
-            </button>
-          </div>
-          
-          <div className="cyber-panel mt-6">
-            <h2 className="text-xl font-bold mb-4">About</h2>
-            <div className="space-y-2">
-              <p className="text-sm text-gray-300">
-                <span className="text-cyber-purple">V Dashboard</span> - Version 1.0.0
-              </p>
-              <p className="text-sm text-gray-300">
-                A Cyberpunk 2077 character companion app.
-              </p>
-              <p className="text-sm text-gray-300 mt-4">
-                Created by an aspiring netrunner. Stay chrome!
-              </p>
-            </div>
+          <div className="mt-6">
+            <AboutPanel />
           </div>
         </div>
       </div>
