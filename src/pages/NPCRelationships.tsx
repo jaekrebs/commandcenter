@@ -1,6 +1,9 @@
 
 import { useState, useEffect } from "react";
 import { NPCCard, NPCRelationship } from "../components/NPCCard";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { LoadingState } from "@/components/LoadingState";
 
 const defaultNPCs: NPCRelationship[] = [
   {
@@ -73,6 +76,24 @@ export default function NPCRelationships() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Fetch user profile to check if character is selected
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return null;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("selected_character_profile_id")
+        .eq("id", session.user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   useEffect(() => {
     localStorage.setItem("v-npcs", JSON.stringify(npcs));
   }, [npcs]);
@@ -86,6 +107,24 @@ export default function NPCRelationships() {
   const filteredNPCs = npcs.filter((npc) =>
     npc.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Show loading state if still loading profile data
+  if (isLoadingProfile) {
+    return <LoadingState message="Loading NPC relationship data..." />;
+  }
+
+  // Show character selection message if no character is selected
+  if (!userProfile?.selected_character_profile_id) {
+    return (
+      <div className="container px-4 py-8 mx-auto">
+        <LoadingState 
+          message="NPC relationship data unavailable" 
+          type="character-required"
+          showRedirect={true}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="container px-4 py-8 mx-auto">

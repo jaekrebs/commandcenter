@@ -1,7 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { MissionCard, Mission } from "../components/MissionCard";
 import { Plus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { LoadingState } from "@/components/LoadingState";
 
 export default function Missions() {
   const [missions, setMissions] = useState<Mission[]>(() => {
@@ -78,6 +80,23 @@ export default function Missions() {
     completed: false,
   });
 
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return null;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("selected_character_profile_id")
+        .eq("id", session.user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   useEffect(() => {
     localStorage.setItem("v-missions", JSON.stringify(missions));
   }, [missions]);
@@ -119,6 +138,22 @@ export default function Missions() {
     if (activeTab === "all") return true;
     return mission.type === activeTab;
   });
+
+  if (isLoadingProfile) {
+    return <LoadingState message="Loading mission data..." />;
+  }
+
+  if (!userProfile?.selected_character_profile_id) {
+    return (
+      <div className="container px-4 py-8 mx-auto">
+        <LoadingState 
+          message="Mission data unavailable" 
+          type="character-required"
+          showRedirect={true}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="container px-4 py-8 mx-auto">
