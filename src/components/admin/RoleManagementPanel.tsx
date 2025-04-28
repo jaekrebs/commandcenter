@@ -95,7 +95,11 @@ export function RoleManagementPanel() {
         <div key={userRole.id} className="flex items-center justify-between mb-4 last:mb-0">
           <div>
             <p className="text-sm">
-              {userRole.profiles && typeof userRole.profiles === 'object' && 'email' in userRole.profiles 
+              {userRole.profiles && 
+               typeof userRole.profiles === 'object' && 
+               userRole.profiles !== null && 
+               'email' in userRole.profiles && 
+               userRole.profiles.email 
                 ? userRole.profiles.email 
                 : userRole.user_id}
             </p>
