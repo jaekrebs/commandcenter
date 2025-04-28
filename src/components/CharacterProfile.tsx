@@ -1,7 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Edit } from "lucide-react";
-import { Button } from "../components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "@/components/ui/use-toast";
 
 type ProfileData = {
   name: string;
@@ -13,34 +14,119 @@ type ProfileData = {
 
 export function CharacterProfile() {
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState<ProfileData>(() => {
-    const savedProfile = localStorage.getItem("v-character-profile");
-    return savedProfile
-      ? JSON.parse(savedProfile)
-      : {
-          name: "V",
-          lifepath: "Corpo",
-          class: "Netrunner",
-          primaryWeapons: "Militech M-10AF Lexington, Mantis Blades",
-          gear: "Armored Corporate Suit",
-        };
+  const [profile, setProfile] = useState<ProfileData>({
+    name: "",
+    lifepath: "Corpo",
+    class: "Netrunner",
+    primaryWeapons: "",
+    gear: "",
   });
 
-  const [editedProfile, setEditedProfile] = useState<ProfileData>({ ...profile });
+  // Fetch selected character profile ID from user profile
+  const { data: userProfile } = useQuery({
+    queryKey: ["user-profile"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return null;
 
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("selected_character_profile_id")
+        .eq("id", session.user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch character profile data if we have a selected profile
+  const { data: characterProfile } = useQuery({
+    queryKey: ["character-profile", userProfile?.selected_character_profile_id],
+    enabled: !!userProfile?.selected_character_profile_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("character_profiles")
+        .select("*")
+        .eq("id", userProfile.selected_character_profile_id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Update local state when we get character profile data
   useEffect(() => {
-    localStorage.setItem("v-character-profile", JSON.stringify(profile));
-  }, [profile]);
+    if (characterProfile) {
+      setProfile({
+        name: characterProfile.name,
+        lifepath: characterProfile.lifepath,
+        class: characterProfile.class,
+        primaryWeapons: characterProfile.primary_weapons || "",
+        gear: characterProfile.gear || "",
+      });
+    }
+  }, [characterProfile]);
 
-  const handleSave = () => {
-    setProfile(editedProfile);
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!userProfile?.selected_character_profile_id) {
+      toast({
+        title: "No profile selected",
+        description: "Please select a character profile in settings first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("character_profiles")
+        .update({
+          name: profile.name,
+          lifepath: profile.lifepath,
+          class: profile.class,
+          primary_weapons: profile.primaryWeapons,
+          gear: profile.gear,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", userProfile.selected_character_profile_id);
+
+      if (error) throw error;
+
+      setIsEditing(false);
+      toast({
+        title: "Profile updated",
+        description: "Your character profile has been saved."
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleCancel = () => {
     setEditedProfile({ ...profile });
     setIsEditing(false);
   };
+
+  if (!userProfile?.selected_character_profile_id) {
+    return (
+      <div className="cyber-panel">
+        <h2 className="text-xl font-bold text-white mb-4">
+          <span className="text-cyber-purple glow-text mr-2">V</span> 
+          Character Profile
+        </h2>
+        <p className="text-sm text-gray-300">
+          No character profile selected. Please select a profile in the settings page.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="cyber-panel relative">
@@ -55,8 +141,8 @@ export function CharacterProfile() {
         ) : null}
       </div>
       
-      <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-        <span className="text-cyber-purple glow-text mr-2">V</span> 
+      <h2 className="text-xl font-bold text-white mb-4">
+        <span className="text-cyber-purple glow-text mr-2">{profile.name}</span> 
         Character Profile
       </h2>
 
