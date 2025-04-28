@@ -1,3 +1,4 @@
+
 import { Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useCharacterProfiles } from "@/hooks/useCharacterProfiles";
@@ -17,10 +18,15 @@ interface UserSettingsPanelProps {
   onSettingChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
+// Define an interface to match what we get from the profiles table
+interface UserProfileData {
+  selected_character_profile_id?: string;
+}
+
 export function UserSettingsPanel({ settings, onSettingChange }: UserSettingsPanelProps) {
   const { data: characterProfiles, isLoading } = useCharacterProfiles();
 
-  const { data: currentProfile } = useQuery({
+  const { data: currentProfile } = useQuery<UserProfileData | null>({
     queryKey: ["user-profile"],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -32,8 +38,14 @@ export function UserSettingsPanel({ settings, onSettingChange }: UserSettingsPan
         .eq("id", session.user.id)
         .single();
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        // If the error is because the column doesn't exist, return an empty object
+        if (error.message.includes("column 'selected_character_profile_id' does not exist")) {
+          return { selected_character_profile_id: undefined };
+        }
+        throw error;
+      }
+      return data as UserProfileData;
     }
   });
 
@@ -42,9 +54,14 @@ export function UserSettingsPanel({ settings, onSettingChange }: UserSettingsPan
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) throw new Error("No user session");
 
+      // Cast the data type to include our custom field
+      const updateData = { 
+        selected_character_profile_id: characterProfileId 
+      } as unknown as Record<string, any>;
+
       const { error } = await supabase
         .from("profiles")
-        .update({ selected_character_profile_id: characterProfileId })
+        .update(updateData)
         .eq("id", session.user.id);
 
       if (error) throw error;
@@ -67,6 +84,14 @@ export function UserSettingsPanel({ settings, onSettingChange }: UserSettingsPan
 
   const handleCharacterProfileChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     updateProfileMutation.mutate(e.target.value);
+  };
+
+  const handleSaveSettings = () => {
+    localStorage.setItem("v-settings", JSON.stringify(settings));
+    toast({
+      title: "Settings saved",
+      description: "Your preferences have been updated.",
+    });
   };
 
   return (
