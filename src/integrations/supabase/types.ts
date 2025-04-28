@@ -230,19 +230,30 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          selected_character_profile_id: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
+          selected_character_profile_id?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
+          selected_character_profile_id?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_selected_character_profile_id_fkey"
+            columns: ["selected_character_profile_id"]
+            isOneToOne: false
+            referencedRelation: "character_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       relic_status: {
         Row: {

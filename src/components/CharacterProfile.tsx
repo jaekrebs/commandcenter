@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Edit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,7 @@ export function CharacterProfile() {
     primaryWeapons: "",
     gear: "",
   });
+  const [editedProfile, setEditedProfile] = useState<ProfileData>(profile);
 
   // Fetch selected character profile ID from user profile
   const { data: userProfile } = useQuery({
@@ -48,7 +50,7 @@ export function CharacterProfile() {
       const { data, error } = await supabase
         .from("character_profiles")
         .select("*")
-        .eq("id", userProfile.selected_character_profile_id)
+        .eq("id", userProfile?.selected_character_profile_id)
         .single();
 
       if (error) throw error;
@@ -59,13 +61,15 @@ export function CharacterProfile() {
   // Update local state when we get character profile data
   useEffect(() => {
     if (characterProfile) {
-      setProfile({
+      const newProfile = {
         name: characterProfile.name,
         lifepath: characterProfile.lifepath,
         class: characterProfile.class,
         primaryWeapons: characterProfile.primary_weapons || "",
         gear: characterProfile.gear || "",
-      });
+      };
+      setProfile(newProfile);
+      setEditedProfile(newProfile);
     }
   }, [characterProfile]);
 
@@ -83,17 +87,18 @@ export function CharacterProfile() {
       const { error } = await supabase
         .from("character_profiles")
         .update({
-          name: profile.name,
-          lifepath: profile.lifepath,
-          class: profile.class,
-          primary_weapons: profile.primaryWeapons,
-          gear: profile.gear,
+          name: editedProfile.name,
+          lifepath: editedProfile.lifepath,
+          class: editedProfile.class,
+          primary_weapons: editedProfile.primaryWeapons,
+          gear: editedProfile.gear,
           updated_at: new Date().toISOString()
         })
         .eq("id", userProfile.selected_character_profile_id);
 
       if (error) throw error;
 
+      setProfile(editedProfile);
       setIsEditing(false);
       toast({
         title: "Profile updated",
@@ -110,7 +115,7 @@ export function CharacterProfile() {
   };
 
   const handleCancel = () => {
-    setEditedProfile({ ...profile });
+    setEditedProfile(profile);
     setIsEditing(false);
   };
 
