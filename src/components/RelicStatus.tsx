@@ -1,99 +1,48 @@
 
-import { useState, useEffect } from "react";
-
-type RelicData = {
-  relicIntegrity: number;
-  johnnyInfluence: number;
-};
+import { useRelicStatus } from "@/hooks/useRelicStatus";
+import { LoadingState } from "./LoadingState";
 
 export function RelicStatus() {
-  const [relicData, setRelicData] = useState<RelicData>(() => {
-    const savedData = localStorage.getItem("v-relic-status");
-    return savedData
-      ? JSON.parse(savedData)
-      : {
-          relicIntegrity: 75,
-          johnnyInfluence: 6,
-        };
-  });
+  const { relicStatus, isLoading, updateRelicStatus } = useRelicStatus();
 
-  useEffect(() => {
-    localStorage.setItem("v-relic-status", JSON.stringify(relicData));
-  }, [relicData]);
+  if (isLoading) {
+    return <LoadingState message="Loading relic status..." />;
+  }
 
-  const handleRelicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRelicData({
-      ...relicData,
-      relicIntegrity: Number(e.target.value),
-    });
-  };
-
-  const handleJohnnyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRelicData({
-      ...relicData,
-      johnnyInfluence: Number(e.target.value),
-    });
-  };
-
-  const getIntegrityColor = (value: number) => {
-    if (value <= 30) return "bg-cyber-red";
-    if (value <= 70) return "bg-cyber-yellow";
-    return "bg-cyber-blue";
-  };
-
-  const getInfluenceColor = (value: number) => {
-    if (value >= 8) return "bg-cyber-red";
-    if (value >= 4) return "bg-cyber-yellow";
-    return "bg-cyber-blue";
-  };
+  if (!relicStatus) {
+    return null;
+  }
 
   return (
     <div className="cyber-panel">
-      <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-        <span className="text-cyber-red glow-text mr-2">Relic</span> Status
+      <h2 className="text-xl font-bold text-white mb-4">
+        Relic Status
       </h2>
-
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-white text-sm">Relic Integrity</span>
-            <span className="text-white text-sm font-bold">{relicData.relicIntegrity}%</span>
+          <div className="flex justify-between mb-1">
+            <span className="text-sm text-gray-400">Relic Integrity</span>
+            <span className="text-sm text-white">{relicStatus.relic_integrity}%</span>
           </div>
-          <div className="cyber-progress-bar mb-2">
+          <div className="cyber-progress-bar">
             <div
-              className={`progress-fill ${getIntegrityColor(relicData.relicIntegrity)}`}
-              style={{ width: `${relicData.relicIntegrity}%` }}
+              className="progress-fill bg-gradient-to-r from-cyber-blue to-cyber-purple"
+              style={{ width: `${relicStatus.relic_integrity}%` }}
             ></div>
           </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={relicData.relicIntegrity}
-            onChange={handleRelicChange}
-            className="w-full accent-cyber-purple"
-          />
         </div>
-
+        
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-white text-sm">Johnny Influence</span>
-            <span className="text-white text-sm font-bold">{relicData.johnnyInfluence}/10</span>
+          <div className="flex justify-between mb-1">
+            <span className="text-sm text-gray-400">Johnny's Influence</span>
+            <span className="text-sm text-white">{relicStatus.johnny_influence}%</span>
           </div>
-          <div className="cyber-progress-bar mb-2">
+          <div className="cyber-progress-bar">
             <div
-              className={`progress-fill ${getInfluenceColor(relicData.johnnyInfluence)}`}
-              style={{ width: `${(relicData.johnnyInfluence / 10) * 100}%` }}
+              className="progress-fill bg-gradient-to-r from-cyber-red to-cyber-pink"
+              style={{ width: `${relicStatus.johnny_influence}%` }}
             ></div>
           </div>
-          <input
-            type="range"
-            min="1"
-            max="10"
-            value={relicData.johnnyInfluence}
-            onChange={handleJohnnyChange}
-            className="w-full accent-cyber-purple"
-          />
         </div>
       </div>
     </div>

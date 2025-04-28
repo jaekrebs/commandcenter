@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Edit, X, Check } from "lucide-react";
 
@@ -6,9 +5,12 @@ export type Mission = {
   id: string;
   name: string;
   type: "main" | "side" | "gig";
-  progress: number;
+  progress_percent: number;
   notes: string;
   completed: boolean;
+  character_profile_id?: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 type MissionCardProps = {
@@ -29,7 +31,7 @@ export function MissionCard({ mission, onUpdate, onDelete }: MissionCardProps) {
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditedMission({
       ...editedMission,
-      progress: Number(e.target.value),
+      progress_percent: Number(e.target.value),
     });
   };
 
@@ -38,7 +40,7 @@ export function MissionCard({ mission, onUpdate, onDelete }: MissionCardProps) {
     const updatedMission = {
       ...mission,
       completed: isCompleted,
-      progress: isCompleted ? 100 : mission.progress,
+      progress_percent: isCompleted ? 100 : mission.progress_percent,
     };
     onUpdate(updatedMission);
   };
@@ -80,13 +82,13 @@ export function MissionCard({ mission, onUpdate, onDelete }: MissionCardProps) {
           <div>
             <div className="flex justify-between text-sm mb-1">
               <span>Progress</span>
-              <span>{editedMission.progress}%</span>
+              <span>{editedMission.progress_percent}%</span>
             </div>
             <input
               type="range"
               min="0"
               max="100"
-              value={editedMission.progress}
+              value={editedMission.progress_percent}
               onChange={handleProgressChange}
               className="w-full accent-cyber-purple"
             />
@@ -158,7 +160,7 @@ export function MissionCard({ mission, onUpdate, onDelete }: MissionCardProps) {
             <div>
               <div className="flex justify-between mb-1 text-sm">
                 <span>Progress</span>
-                <span>{mission.progress}%</span>
+                <span>{mission.progress_percent}%</span>
               </div>
               <div className="cyber-progress-bar">
                 <div
@@ -167,7 +169,7 @@ export function MissionCard({ mission, onUpdate, onDelete }: MissionCardProps) {
                       ? 'bg-cyber-purple' 
                       : 'bg-gradient-to-r from-cyber-blue to-cyber-purple'
                   }`}
-                  style={{ width: `${mission.progress}%` }}
+                  style={{ width: `${mission.progress_percent}%` }}
                 ></div>
               </div>
             </div>
