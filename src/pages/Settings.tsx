@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "../components/ui/use-toast";
 import { Check } from "lucide-react";
+import { FileUploader } from "../components/FileUploader";
 
 type SettingsData = {
   username: string;
@@ -89,6 +89,18 @@ export default function Settings() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleImportData = (type: 'notes' | 'npcs' | 'missions' | 'cyberware', data: any[]) => {
+    const storageKey = `v-${type}`;
+    const existingData = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const newData = [...existingData, ...data];
+    localStorage.setItem(storageKey, JSON.stringify(newData));
+    
+    toast({
+      title: `${type} imported`,
+      description: `Successfully imported ${data.length} ${type}.`,
+    });
   };
 
   return (
@@ -189,6 +201,31 @@ export default function Settings() {
                     Clear All Data
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="cyber-panel mt-6">
+            <h2 className="text-xl font-bold mb-4">Import Data</h2>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-medium mb-2">Import Notes</h3>
+                <FileUploader type="notes" onDataImported={(data) => handleImportData('notes', data)} />
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium mb-2">Import NPCs</h3>
+                <FileUploader type="npcs" onDataImported={(data) => handleImportData('npcs', data)} />
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium mb-2">Import Missions</h3>
+                <FileUploader type="missions" onDataImported={(data) => handleImportData('missions', data)} />
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-medium mb-2">Import Cyberware</h3>
+                <FileUploader type="cyberware" onDataImported={(data) => handleImportData('cyberware', data)} />
               </div>
             </div>
           </div>
