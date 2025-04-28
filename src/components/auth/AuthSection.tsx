@@ -3,28 +3,24 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { LogOut } from "lucide-react";
 
 export function AuthSection() {
   const [isLoading, setIsLoading] = useState(false);
   
-  const handleEmailSignIn = async () => {
+  const handleSignOut = async () => {
     setIsLoading(true);
     try {
-      const {
-        data,
-        error
-      } = await supabase.auth.signInWithOtp({
-        email: 'user@example.com',
-        // Since you're the only user, we'll hardcode this
-        options: {
-          emailRedirectTo: window.location.origin
-        }
-      });
+      const { error } = await supabase.auth.signOut();
+      
       if (error) throw error;
+      
       toast({
-        title: "Check your email",
-        description: "We've sent you a magic link to sign in."
+        title: "Signed out",
+        description: "You have been successfully signed out."
       });
+      
+      window.location.href = "/auth";
     } catch (error) {
       toast({
         title: "Error",
@@ -43,18 +39,17 @@ export function AuthSection() {
         Manage your account authentication settings.
       </p>
       <Button 
-        variant="default"
+        variant="destructive"
         disabled={isLoading}
-        onClick={() => supabase.auth.signOut().then(() => {
-          toast({
-            title: "Signed out",
-            description: "You have been successfully signed out."
-          });
-          window.location.href = "/";
-        })}
+        onClick={handleSignOut}
         className="w-full"
       >
-        {isLoading ? "Processing..." : "Sign Out"}
+        {isLoading ? "Processing..." : (
+          <>
+            <LogOut className="w-4 h-4 mr-2" />
+            <span>Sign Out</span>
+          </>
+        )}
       </Button>
     </div>
   );
