@@ -51,7 +51,14 @@ export default function NPCRelationships() {
       // Use local storage as fallback if no database data yet
       const savedNPCs = localStorage.getItem("v-npcs");
       if (savedNPCs) {
-        setNPCs(JSON.parse(savedNPCs));
+        // Parse and adapt the stored format if needed
+        const storedNPCs = JSON.parse(savedNPCs);
+        // Transform any old format data to match the new schema
+        const adaptedNPCs = storedNPCs.map((npc: any) => ({
+          ...npc,
+          npc_name: npc.npc_name || npc.name, // Ensure we have npc_name
+        }));
+        setNPCs(adaptedNPCs);
       }
     }
   }, [npcData]);
@@ -71,14 +78,23 @@ export default function NPCRelationships() {
     if (userProfile?.selected_character_profile_id) {
       try {
         // Make sure NPC has character_profile_id set
-        if (!updatedNPC.character_profile_id) {
-          updatedNPC.character_profile_id = userProfile.selected_character_profile_id;
-        }
+        const npcToUpdate = {
+          ...updatedNPC,
+          character_profile_id: updatedNPC.character_profile_id || userProfile.selected_character_profile_id
+        };
         
         const { error } = await supabase
           .from("npc_relationships")
           .upsert({
-            ...updatedNPC,
+            id: npcToUpdate.id,
+            npc_name: npcToUpdate.npc_name,
+            friendship: npcToUpdate.friendship,
+            trust: npcToUpdate.trust,
+            lust: npcToUpdate.lust,
+            love: npcToUpdate.love,
+            image: npcToUpdate.image,
+            background: npcToUpdate.background,
+            character_profile_id: npcToUpdate.character_profile_id,
             updated_at: new Date().toISOString()
           });
 
@@ -95,7 +111,6 @@ export default function NPCRelationships() {
   };
 
   const filteredNPCs = npcs.filter((npc) =>
-    npc.name ? npc.name.toLowerCase().includes(searchTerm.toLowerCase()) :
     npc.npc_name ? npc.npc_name.toLowerCase().includes(searchTerm.toLowerCase()) : false
   );
 

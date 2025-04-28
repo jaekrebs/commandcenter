@@ -4,13 +4,16 @@ import { Plus, Minus } from "lucide-react";
 
 export type NPCRelationship = {
   id: string;
-  name: string;
+  npc_name: string; // Changed from 'name' to 'npc_name' to match database schema
   friendship: number;
   trust: number;
   lust: number;
   love: number;
   image: string;
   background: string;
+  character_profile_id?: string; // Added this field to match database schema
+  created_at?: string; // Added optional timestamp fields
+  updated_at?: string;
 };
 
 type NPCCardProps = {
@@ -49,7 +52,7 @@ export function NPCCard({ npc, onUpdate }: NPCCardProps) {
             className="w-12 h-12 rounded-full bg-cover bg-center border-2 border-cyber-purple/50" 
             style={{ backgroundImage: `url(${npc.image})` }}
           />
-          <h3 className="text-lg font-bold text-white">{npc.name}</h3>
+          <h3 className="text-lg font-bold text-white">{npc.npc_name}</h3> {/* Updated to use npc_name instead of name */}
         </div>
         
         <div className="mt-4 space-y-3">
