@@ -26,52 +26,54 @@ export function SignUpForm() {
         password,
         options: {
           data: {
-            username: username,
+            username,
           },
         },
       });
 
       if (signUpError) throw signUpError;
       
-      if (authData.user) {
-        // 2. Create the user role as super_admin
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert([
-            { 
-              user_id: authData.user.id,
-              role: 'super_admin'
-            }
-          ]);
-
-        if (roleError) {
-          console.error("Error setting user role:", roleError);
-          throw new Error("Failed to set user role");
-        }
-
-        // 3. Store the access code
-        const { error: accessCodeError } = await supabase
-          .from('access_codes')
-          .insert([
-            {
-              user_id: authData.user.id,
-              code: accessCode
-            }
-          ]);
-
-        if (accessCodeError) {
-          console.error("Error storing access code:", accessCodeError);
-          throw new Error("Failed to store access code");
-        }
-
-        toast({
-          title: "Account created",
-          description: "Your super admin account has been created successfully.",
-        });
+      if (!authData.user) {
+        throw new Error("Failed to create user account");
       }
+
+      // 2. Store the access code
+      const { error: accessCodeError } = await supabase
+        .from('access_codes')
+        .insert([
+          {
+            user_id: authData.user.id,
+            code: accessCode
+          }
+        ]);
+
+      if (accessCodeError) {
+        console.error("Error storing access code:", accessCodeError);
+        throw new Error("Failed to store access code");
+      }
+
+      // 3. Create the user role as super_admin
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert([
+          { 
+            user_id: authData.user.id,
+            role: 'super_admin'
+          }
+        ]);
+
+      if (roleError) {
+        console.error("Error setting user role:", roleError);
+        throw new Error("Failed to set user role");
+      }
+
+      toast({
+        title: "Account created",
+        description: "Your super admin account has been created successfully.",
+      });
       
       navigate("/");
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
@@ -137,7 +139,7 @@ export function SignUpForm() {
           "Creating Super Admin Account..."
         ) : (
           <>
-            <Shield className="w-4 h-4" />
+            <Shield className="w-4 h-4 mr-2" />
             <span>Create Super Admin Account</span>
           </>
         )}
