@@ -4,12 +4,15 @@ import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, Shield, LogIn,
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/components/ui/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { data: userRole } = useUserRole();
+  const isAdmin = userRole === 'super_admin' || userRole === 'admin';
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -49,6 +52,9 @@ export function Navigation() {
     { name: "Cyberware", path: "/cyberware", icon: <Cpu size={18} /> },
     { name: "Notes", path: "/notes", icon: <FileEdit size={18} /> },
     { name: "Settings", path: "/settings", icon: <Settings size={18} /> },
+    ...(isAdmin ? [
+      { name: "Admin", path: "/admin", icon: <Shield size={18} /> }
+    ] : [])
   ];
 
   return (
