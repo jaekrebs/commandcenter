@@ -12,18 +12,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export function RoleManagementPanel() {
   const queryClient = useQueryClient();
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
-  const { data: users, isLoading: isLoadingUsers } = useQuery({
+  const { data: users, isLoading: isLoadingUsers, error } = useQuery({
     queryKey: ['users-roles'],
     queryFn: async () => {
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('*, profiles:id(*)');
-      return roles;
+      try {
+        const { data: roles, error } = await supabase
+          .from('user_roles')
+          .select('*, profiles:user_id(email)');
+        
+        if (error) throw error;
+        console.log("User roles data:", roles);
+        return roles || [];
+      } catch (err) {
+        console.error("Error fetching user roles:", err);
+        throw err;
+      }
     }
   });
 
@@ -52,12 +61,40 @@ export function RoleManagementPanel() {
     }
   });
 
+  if (isLoadingUsers) {
+    return <p className="text-sm text-gray-400">Loading user roles...</p>;
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>
+          Failed to load user roles. Please try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!users || users.length === 0) {
+    return (
+      <Alert>
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>No User Roles</AlertTitle>
+        <AlertDescription>
+          No user roles have been defined yet. User roles will appear here when users are assigned roles.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <ScrollArea className="h-[300px] rounded-md border p-4">
-      {users?.map((userRole) => (
+      {users.map((userRole) => (
         <div key={userRole.id} className="flex items-center justify-between mb-4 last:mb-0">
           <div>
-            <p className="text-sm">{userRole.user_id}</p>
+            <p className="text-sm">{userRole.profiles?.email || userRole.user_id}</p>
             <p className="text-xs text-gray-400">Current role: {userRole.role}</p>
           </div>
           <Select
