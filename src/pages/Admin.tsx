@@ -29,17 +29,17 @@ const Admin = () => {
         .select('*', { count: 'exact', head: true })
         .in('role', ['admin', 'super_admin']);
 
-      // Get moderator count
-      const { count: modCount } = await supabase
+      // Get user count (excluding admins)
+      const { count: userCount } = await supabase
         .from('user_roles')
         .select('*', { count: 'exact', head: true })
-        .eq('role', 'moderator');
+        .eq('role', 'user');
 
       return {
         totalUsers: usersCount || 0,
         activeSessions,
         adminUsers: adminCount || 0,
-        moderators: modCount || 0
+        standardUsers: userCount || 0
       };
     },
     enabled: isAdmin
@@ -136,7 +136,7 @@ const Admin = () => {
           ) : (
             <>
               <p className="text-gray-400 mb-2">Admin users: {systemMetrics?.adminUsers || 0}</p>
-              <p className="text-gray-400 mb-2">Moderators: {systemMetrics?.moderators || 0}</p>
+              <p className="text-gray-400 mb-2">Standard users: {systemMetrics?.standardUsers || 0}</p>
               <button className="cyber-button text-sm mt-2">Manage Roles</button>
             </>
           )}
