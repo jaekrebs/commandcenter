@@ -66,7 +66,7 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<ProtectedRoute><Auth /></ProtectedRoute>} />
               <Route 
-                path="/commandcenter/"
+                index
                 element={
                   <>
                     <Navigation />
