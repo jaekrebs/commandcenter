@@ -62,7 +62,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          installed: boolean | null
           name: string
+          rarity: string | null
           status: string | null
           type: string
           updated_at: string | null
@@ -72,7 +74,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          installed?: boolean | null
           name: string
+          rarity?: string | null
           status?: string | null
           type: string
           updated_at?: string | null
@@ -82,7 +86,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          installed?: boolean | null
           name?: string
+          rarity?: string | null
           status?: string | null
           type?: string
           updated_at?: string | null

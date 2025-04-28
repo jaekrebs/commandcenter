@@ -1,127 +1,53 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Edit, X, Check } from "lucide-react";
-
-type CyberwareItem = {
-  id: string;
-  name: string;
-  type: string;
-  description: string;
-  rarity: "common" | "uncommon" | "rare" | "epic" | "legendary";
-  installed: boolean;
-};
+import { useCyberware, CyberwareItem } from "@/hooks/useCyberware";
+import { LoadingState } from "@/components/LoadingState";
 
 export default function Cyberware() {
-  const [cyberware, setCyberware] = useState<CyberwareItem[]>(() => {
-    const savedCyberware = localStorage.getItem("v-cyberware");
-    return savedCyberware
-      ? JSON.parse(savedCyberware)
-      : [
-          {
-            id: "cyber1",
-            name: "Kiroshi Optics",
-            type: "Optical System",
-            description: "Enhanced visual processing, zoom capabilities, and targeting system.",
-            rarity: "uncommon",
-            installed: true,
-          },
-          {
-            id: "cyber2",
-            name: "Mantis Blades",
-            type: "Arms",
-            description: "Retractable blades capable of slicing through most materials with ease.",
-            rarity: "rare",
-            installed: true,
-          },
-          {
-            id: "cyber3",
-            name: "Subdermal Armor",
-            type: "Integumentary System",
-            description: "Reinforced skin that increases resistance to physical damage.",
-            rarity: "uncommon",
-            installed: true,
-          },
-          {
-            id: "cyber4",
-            name: "Sandevistan",
-            type: "Operating System",
-            description: "Time-slowing tactical system that enhances reflexes.",
-            rarity: "epic",
-            installed: false,
-          },
-          {
-            id: "cyber5",
-            name: "Kerenzikov",
-            type: "Nervous System",
-            description: "Reflex booster that allows for slowed perception when dodging.",
-            rarity: "rare",
-            installed: true,
-          },
-        ];
-  });
-
+  const { cyberware, isLoading, addCyberware, updateCyberware, deleteCyberware } = useCyberware();
   const [isAdding, setIsAdding] = useState(false);
   const [newCyberware, setNewCyberware] = useState<Omit<CyberwareItem, "id">>({
     name: "",
     type: "",
     description: "",
     rarity: "common",
-    installed: false,
+    installed: false
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<CyberwareItem | null>(null);
 
-  useEffect(() => {
-    localStorage.setItem("v-cyberware", JSON.stringify(cyberware));
-  }, [cyberware]);
+  if (isLoading) {
+    return <LoadingState message="Loading cyberware..." />;
+  }
 
   const handleAdd = () => {
     if (newCyberware.name && newCyberware.type) {
-      const newItem = {
-        id: `cyber${Date.now()}`,
-        ...newCyberware,
-      };
-      setCyberware([...cyberware, newItem]);
+      addCyberware(newCyberware);
       setNewCyberware({
         name: "",
         type: "",
         description: "",
         rarity: "common",
-        installed: false,
+        installed: false
       });
       setIsAdding(false);
     }
   };
 
-  const handleDelete = (id: string) => {
-    setCyberware(cyberware.filter((item) => item.id !== id));
-  };
-
-  const handleEdit = (id: string) => {
-    const item = cyberware.find((c) => c.id === id);
-    if (item) {
-      setEditForm({ ...item });
-      setEditingId(id);
-    }
-  };
-
   const handleUpdate = () => {
-    if (editForm && editingId) {
-      setCyberware(
-        cyberware.map((item) => (item.id === editingId ? editForm : item))
-      );
+    if (editForm) {
+      updateCyberware(editForm);
       setEditingId(null);
       setEditForm(null);
     }
   };
 
   const handleToggleInstalled = (id: string) => {
-    setCyberware(
-      cyberware.map((item) =>
-        item.id === id ? { ...item, installed: !item.installed } : item
-      )
-    );
+    const item = cyberware.find((c) => c.id === id);
+    if (item) {
+      updateCyberware({ ...item, installed: !item.installed });
+    }
   };
 
   const getRarityColor = (rarity: string) => {
