@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { Upload, AlertCircle } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-type FileType = 'notes' | 'npcs' | 'missions' | 'cyberware';
+type FileType = 'notes' | 'npcs' | 'missions' | 'cyberware' | 'character_profiles';
 
 type HeaderMapping = {
   [key in FileType]: string[];
@@ -13,7 +13,8 @@ const HEADER_MAPPINGS: HeaderMapping = {
   notes: ['Note title', 'Note content', 'Note date'],
   npcs: ['NPC name', 'Friendship', 'Trust', 'Lust', 'Love', 'Image', 'Background'],
   missions: ['Mission name', 'Type', 'Progress', 'Notes', 'Completed'],
-  cyberware: ['Name', 'Type', 'Status', 'Description', 'Installation date']
+  cyberware: ['Name', 'Type', 'Status', 'Description', 'Installation date'],
+  character_profiles: ['Character name', 'Class', 'Level', 'Alignment', 'Background']
 };
 
 interface FileUploaderProps {
@@ -29,6 +30,54 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
     return expectedHeaders.every(header => 
       headers.map(h => h.toLowerCase()).includes(header.toLowerCase())
     );
+  };
+
+  const syncToSupabase = async (data: any[]) => {
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to sync data with your profile.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      switch (type) {
+        case 'character_profiles':
+          const { error: profileError } = await supabase
+            .from('character_profiles')
+            .upsert(data.map(profile => ({
+              ...profile,
+              profile_id: session.user.id,
+              updated_at: new Date().toISOString()
+            })));
+          
+          if (profileError) throw profileError;
+          break;
+          
+        default:
+          const { error } = await supabase
+            .from(type)
+            .upsert(data);
+          
+          if (error) throw error;
+          break;
+      }
+
+      toast({
+        title: "Data synced",
+        description: `Successfully synced ${data.length} items to your profile.`,
+      });
+    } catch (error) {
+      console.error('Error syncing data:', error);
+      toast({
+        title: "Sync failed",
+        description: "Failed to sync data with your profile. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleFile = async (file: File) => {
@@ -54,12 +103,15 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
         }, {} as any);
       });
 
+      await syncToSupabase(data);
       onDataImported(data);
+      
       toast({
         title: "Import successful",
         description: `${data.length} ${type} imported successfully.`,
       });
     } catch (error) {
+      console.error('Error processing file:', error);
       toast({
         variant: "destructive",
         title: "Error importing file",
