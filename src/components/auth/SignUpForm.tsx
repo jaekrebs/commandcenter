@@ -20,7 +20,7 @@ export function SignUpForm() {
     setLoading(true);
     
     try {
-      // 1. Sign up the user
+      // 1. Sign up the user first
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -37,7 +37,32 @@ export function SignUpForm() {
         throw new Error("Failed to create user account");
       }
 
-      // 2. Store the access code
+      // Wait briefly for the session to be established
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Get the latest session to ensure we're authenticated when making DB calls
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      if (!sessionData.session) {
+        throw new Error("Authentication session not established");
+      }
+
+      // 2. Create the user role as super_admin
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert([
+          { 
+            user_id: authData.user.id,
+            role: 'super_admin'
+          }
+        ]);
+
+      if (roleError) {
+        console.error("Error setting user role:", roleError);
+        throw new Error("Failed to set user role");
+      }
+      
+      // 3. Store the access code
       const { error: accessCodeError } = await supabase
         .from('access_codes')
         .insert([
@@ -52,21 +77,6 @@ export function SignUpForm() {
         throw new Error("Failed to store access code");
       }
 
-      // 3. Create the user role as super_admin
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert([
-          { 
-            user_id: authData.user.id,
-            role: 'super_admin'
-          }
-        ]);
-
-      if (roleError) {
-        console.error("Error setting user role:", roleError);
-        throw new Error("Failed to set user role");
-      }
-
       toast({
         title: "Account created",
         description: "Your super admin account has been created successfully.",
@@ -74,6 +84,7 @@ export function SignUpForm() {
       
       navigate("/");
     } catch (error: any) {
+      console.error("Signup error:", error);
       toast({
         title: "Error",
         description: error.message,
