@@ -122,9 +122,26 @@ export default function Settings() {
               {isAdmin && (
                 <TabsContent value="admin" className="mt-0 space-y-4">
                   <div className="space-y-6">
-                    <SystemUpdatePanel />
-                    <UserLogsPanel />
-                    <RoleManagementPanel />
+                    <div className="cyber-panel">
+                      <div className="flex items-center mb-4">
+                        <h2 className="text-xl">System Management</h2>
+                      </div>
+                      <SystemUpdatePanel />
+                    </div>
+                    
+                    <div className="cyber-panel">
+                      <div className="flex items-center mb-4">
+                        <h2 className="text-xl">User Logs</h2>
+                      </div>
+                      <UserLogsPanel />
+                    </div>
+                    
+                    <div className="cyber-panel">
+                      <div className="flex items-center mb-4">
+                        <h2 className="text-xl">Role Management</h2>
+                      </div>
+                      <RoleManagementPanel />
+                    </div>
                   </div>
                 </TabsContent>
               )}
