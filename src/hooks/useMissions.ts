@@ -25,7 +25,12 @@ export function useMissions() {
         .eq("character_profile_id", profile.selected_character_profile_id);
 
       if (error) throw error;
-      return data;
+      
+      // Cast the type field to ensure it matches the expected union type
+      return data.map(mission => ({
+        ...mission,
+        type: mission.type as "main" | "side" | "gig"
+      })) as Mission[];
     }
   });
 
