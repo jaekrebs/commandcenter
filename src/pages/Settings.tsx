@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { FileUploader } from "../components/FileUploader";
 import { AuthSection } from "../components/auth/AuthSection";
 import { DataSyncSection } from "../components/data/DataSyncSection";
+import { supabase } from "@/integrations/supabase/client";
 
 type SettingsData = {
   username: string;
@@ -18,7 +19,7 @@ export default function Settings() {
     return savedSettings
       ? JSON.parse(savedSettings)
       : {
-          username: "V",
+          username: "",
           autoSaveInterval: 5,
           notificationsEnabled: true,
           darkThemeVariant: "purple",
@@ -26,8 +27,30 @@ export default function Settings() {
   });
 
   useEffect(() => {
-    localStorage.setItem("v-settings", JSON.stringify(settings));
-  }, [settings]);
+    const fetchProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (profile) {
+            setSettings(prev => ({
+              ...prev,
+              username: profile.username
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+    
+    fetchProfile();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -63,7 +86,7 @@ export default function Settings() {
     const dataStr = JSON.stringify(exportData, null, 2);
     const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
 
-    const exportFileDefaultName = `v-dashboard-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const exportFileDefaultName = `v-dashboard-backup-${new Date().toISOString().slice(0, 10)}.json";
 
     const linkElement = document.createElement("a");
     linkElement.setAttribute("href", dataUri);
@@ -124,8 +147,8 @@ export default function Settings() {
                     type="text"
                     name="username"
                     value={settings.username}
-                    onChange={handleChange}
-                    className="bg-cyber-black border border-cyber-purple/30 text-white rounded px-3 py-2 w-full focus:outline-none focus:ring-1 focus:ring-cyber-purple"
+                    disabled
+                    className="bg-cyber-black/50 border border-cyber-purple/30 text-white rounded px-3 py-2 w-full focus:outline-none cursor-not-allowed opacity-70"
                   />
                 </div>
                 

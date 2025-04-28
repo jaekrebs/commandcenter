@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, LogIn } from "lucide-react";
@@ -49,7 +48,7 @@ export function Navigation() {
           <div className="hidden md:flex md:items-center md:ml-6">
             <Link 
               to="/auth" 
-              className="cyber-button text-sm flex items-center gap-2 hover:bg-cyber-purple/20"
+              className="bg-cyber-darkgray text-white border border-cyber-purple/50 px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 hover:bg-cyber-purple/20 transition-all hover:border-cyber-purple hover:shadow-[0_0_10px_rgba(155,135,245,0.5)]"
             >
               <LogIn size={16} />
               Access Terminal
