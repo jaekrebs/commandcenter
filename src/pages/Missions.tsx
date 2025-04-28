@@ -11,15 +11,29 @@ import { LoadingState } from "@/components/LoadingState";
 export default function Missions() {
   const [activeTab, setActiveTab] = useState<"all" | "main" | "side" | "gig">("all");
   const [showNewMissionForm, setShowNewMissionForm] = useState(false);
-  const { missions, isLoading, addMission, updateMission, deleteMission } = useMissions();
+  const { missions, isLoading, addMission, updateMission, deleteMission, hasCharacter } = useMissions();
 
   const handleAddMission = (newMission: Omit<Mission, "id">) => {
     addMission(newMission);
     setShowNewMissionForm(false);
   };
 
+  // Show loading state while fetching missions data
   if (isLoading) {
     return <LoadingState message="Loading mission data..." />;
+  }
+
+  // Show character selection message if no character is selected
+  if (!hasCharacter) {
+    return (
+      <div className="container px-4 py-8 mx-auto">
+        <LoadingState 
+          message="Mission data unavailable" 
+          type="character-required"
+          showRedirect={true}
+        />
+      </div>
+    );
   }
 
   const filteredMissions = missions.filter((mission) => {

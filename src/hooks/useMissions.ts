@@ -7,23 +7,32 @@ import { Mission } from "@/components/MissionCard";
 export function useMissions() {
   const queryClient = useQueryClient();
 
-  const { data: missions = [], isLoading } = useQuery({
-    queryKey: ["missions"],
+  const { data: userProfile } = useQuery({
+    queryKey: ["user-profile"],
     queryFn: async () => {
-      const { data: profile } = await supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return null;
+
+      const { data, error } = await supabase
         .from("profiles")
         .select("selected_character_profile_id")
+        .eq("id", session.user.id)
         .single();
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
-      if (!profile?.selected_character_profile_id) {
-        return [];
-      }
-
+  const { data: missions = [], isLoading } = useQuery({
+    queryKey: ["missions", userProfile?.selected_character_profile_id],
+    enabled: !!userProfile?.selected_character_profile_id,
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("missions")
         .select("*")
-        .eq("character_profile_id", profile.selected_character_profile_id);
-
+        .eq("character_profile_id", userProfile?.selected_character_profile_id);
+      
       if (error) throw error;
       
       // Cast the type field to ensure it matches the expected union type
@@ -36,12 +45,7 @@ export function useMissions() {
 
   const addMission = useMutation({
     mutationFn: async (newMission: Omit<Mission, "id">) => {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("selected_character_profile_id")
-        .single();
-
-      if (!profile?.selected_character_profile_id) {
+      if (!userProfile?.selected_character_profile_id) {
         throw new Error("No character profile selected");
       }
 
@@ -49,7 +53,7 @@ export function useMissions() {
         .from("missions")
         .insert({
           ...newMission,
-          character_profile_id: profile.selected_character_profile_id,
+          character_profile_id: userProfile.selected_character_profile_id,
         })
         .select()
         .single();
@@ -58,7 +62,7 @@ export function useMissions() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["missions"] });
+      queryClient.invalidateQueries({ queryKey: ["missions", userProfile?.selected_character_profile_id] });
       toast({
         title: "Success",
         description: "Mission added successfully"
@@ -77,13 +81,17 @@ export function useMissions() {
     mutationFn: async (mission: Mission) => {
       const { error } = await supabase
         .from("missions")
-        .update(mission)
+        .update({
+          title: mission.title,
+          content: mission.content,
+          updated_at: new Date().toISOString()
+        })
         .eq("id", mission.id);
 
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["missions"] });
+      queryClient.invalidateQueries({ queryKey: ["missions", userProfile?.selected_character_profile_id] });
       toast({
         title: "Success",
         description: "Mission updated successfully"
@@ -108,7 +116,7 @@ export function useMissions() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["missions"] });
+      queryClient.invalidateQueries({ queryKey: ["missions", userProfile?.selected_character_profile_id] });
       toast({
         title: "Success",
         description: "Mission deleted successfully"
@@ -117,7 +125,7 @@ export function useMissions() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete mission",
+        description: error instanceof Error ? error.message : "Failed to update mission",
         variant: "destructive"
       });
     }
@@ -126,8 +134,9 @@ export function useMissions() {
   return {
     missions,
     isLoading,
-    addMission: addMission.mutate,
-    updateMission: updateMission.mutate,
-    deleteMission: deleteMission.mutate
+    addNote: addMission.mutate,
+    updateNote: updateMission.mutate,
+    deleteNote: deleteMission.mutate,
+    hasCharacter: !!userProfile?.selected_character_profile_id
   };
 }
