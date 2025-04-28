@@ -12,6 +12,7 @@ export function SignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [accessCode, setAccessCode] = useState("");
   const navigate = useNavigate();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -46,6 +47,21 @@ export function SignUpForm() {
         if (roleError) {
           console.error("Error setting user role:", roleError);
           throw new Error("Failed to set user role");
+        }
+
+        // 3. Store the access code
+        const { error: accessCodeError } = await supabase
+          .from('access_codes')
+          .insert([
+            {
+              user_id: authData.user.id,
+              code: accessCode
+            }
+          ]);
+
+        if (accessCodeError) {
+          console.error("Error storing access code:", accessCodeError);
+          throw new Error("Failed to store access code");
         }
 
         toast({
@@ -85,6 +101,17 @@ export function SignUpForm() {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          className="bg-cyber-darkgray/50 border-cyber-purple/30"
+          required
+        />
+      </div>
+
+      <div>
+        <Input
+          type="text"
+          placeholder="Access Code"
+          value={accessCode}
+          onChange={(e) => setAccessCode(e.target.value)}
           className="bg-cyber-darkgray/50 border-cyber-purple/30"
           required
         />
