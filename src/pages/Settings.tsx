@@ -1,82 +1,15 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { UserSettingsPanel } from "../components/settings/UserSettingsPanel";
-import { DataManagementPanel } from "../components/settings/DataManagementPanel";
-import { AboutPanel } from "../components/settings/AboutPanel";
-import { AuthSection } from "../components/auth/AuthSection";
-import { DataSyncSection } from "../components/data/DataSyncSection";
-import { CharacterProfilesSection } from "../components/settings/CharacterProfilesSection";
-import { toast } from "@/components/ui/use-toast";
-
-type SettingsData = {
-  username: string;
-  autoSaveInterval: number;
-  notificationsEnabled: boolean;
-  darkThemeVariant: string;
-};
+import { useState } from "react";
+import { CharacterProfilesSection } from "@/components/settings/CharacterProfilesSection";
+import { UserSettingsPanel } from "@/components/settings/UserSettingsPanel";
+import { DataManagementPanel } from "@/components/settings/DataManagementPanel";
+import { AboutPanel } from "@/components/settings/AboutPanel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AuthSection } from "@/components/auth/AuthSection";
+import { AccessCodeSection } from "@/components/auth/AccessCodeSection";
 
 export default function Settings() {
-  const [settings, setSettings] = useState<SettingsData>(() => {
-    const savedSettings = localStorage.getItem("v-settings");
-    return savedSettings
-      ? JSON.parse(savedSettings)
-      : {
-          username: "",
-          autoSaveInterval: 5,
-          notificationsEnabled: true,
-          darkThemeVariant: "purple",
-        };
-  });
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setSettings(prev => ({
-            ...prev,
-            username: session.user.email || ""
-          }));
-        }
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      }
-    };
-    
-    fetchProfile();
-    
-    // Apply theme on component mount
-    document.documentElement.className = settings.darkThemeVariant === 'purple' 
-      ? '' 
-      : `theme-${settings.darkThemeVariant}`;
-  }, []);
-
-  const handleSettingChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target as HTMLInputElement;
-    const newValue = type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
-    
-    const newSettings = {
-      ...settings,
-      [name]: type === "number" ? Number(value) : newValue,
-    };
-    
-    setSettings(newSettings);
-    
-    // Apply theme immediately when changed
-    if (name === 'darkThemeVariant') {
-      document.documentElement.className = value === 'purple' 
-        ? '' 
-        : `theme-${value}`;
-      
-      toast({
-        title: "Theme Updated",
-        description: `Theme changed to ${value.charAt(0).toUpperCase() + value.slice(1)}`,
-      });
-    }
-  };
+  const [activeTab, setActiveTab] = useState("user-settings");
 
   return (
     <div className="container px-4 py-8 mx-auto">
@@ -85,25 +18,58 @@ export default function Settings() {
       </h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="col-span-2">
-          <div className="space-y-6">
-            <CharacterProfilesSection />
-            <UserSettingsPanel 
-              settings={settings}
-              onSettingChange={handleSettingChange}
-            />
-            <DataManagementPanel settings={settings} />
+        <div className="lg:col-span-1">
+          <div className="cyber-panel">
+            <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="w-full">
+              <TabsList className="flex flex-col items-stretch border-r border-cyber-purple/20 w-full rounded-none bg-transparent space-y-1">
+                <TabsTrigger 
+                  value="user-settings" 
+                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+                >
+                  User Settings
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="access-code" 
+                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+                >
+                  Access Code
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="auth" 
+                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+                >
+                  Authentication
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="characters" 
+                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+                >
+                  Character Profiles
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="data" 
+                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+                >
+                  Data Management
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="about" 
+                  className="justify-start text-left py-2 px-4 data-[state=active]:bg-cyber-purple/20 data-[state=active]:border-r-2 data-[state=active]:border-cyber-purple rounded-none"
+                >
+                  About
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
-        
-        <div>
-          <AuthSection />
-          <div className="mt-6">
-            <DataSyncSection />
-          </div>
-          <div className="mt-6">
-            <AboutPanel />
-          </div>
+
+        <div className="lg:col-span-2 space-y-6">
+          {activeTab === "user-settings" && <UserSettingsPanel />}
+          {activeTab === "access-code" && <AccessCodeSection />}
+          {activeTab === "auth" && <AuthSection />}
+          {activeTab === "characters" && <CharacterProfilesSection />}
+          {activeTab === "data" && <DataManagementPanel />}
+          {activeTab === "about" && <AboutPanel />}
         </div>
       </div>
     </div>

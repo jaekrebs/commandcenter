@@ -1,9 +1,6 @@
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield } from "lucide-react";
-import { SignInForm } from "./SignInForm";
-import { SignUpForm } from "./SignUpForm";
-import { MagicLinkForm } from "./MagicLinkForm";
+import { AccessCodeForm } from "./AccessCodeForm";
 
 export function AuthForm() {
   return (
@@ -12,28 +9,10 @@ export function AuthForm() {
         <div className="mb-8 text-center">
           <Shield className="mx-auto h-12 w-12 text-cyber-purple mb-4" />
           <h1 className="text-3xl font-bold text-cyber-purple mb-2">ACCESS TERMINAL</h1>
-          <p className="text-gray-400">Enter your credentials to proceed</p>
+          <p className="text-gray-400">Enter your access code to proceed</p>
         </div>
         
-        <Tabs defaultValue="signin" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            <TabsTrigger value="magic">Magic Link</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="signin">
-            <SignInForm />
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <SignUpForm />
-          </TabsContent>
-          
-          <TabsContent value="magic">
-            <MagicLinkForm />
-          </TabsContent>
-        </Tabs>
+        <AccessCodeForm />
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">SECURITY PROTOCOL v2.077</p>

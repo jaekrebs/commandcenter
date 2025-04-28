@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      access_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       character_profiles: {
         Row: {
           class: string
@@ -322,6 +343,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_user_by_access_code: {
+        Args: { access_code: string }
+        Returns: {
+          email: string
+        }[]
+      }
       has_role: {
         Args: { user_id: string; role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
