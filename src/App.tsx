@@ -61,7 +61,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename="/commandcenter/">
           <div className="min-h-screen bg-cyber-black text-white">
             <Routes>
               <Route path="/auth" element={<ProtectedRoute><Auth /></ProtectedRoute>} />
