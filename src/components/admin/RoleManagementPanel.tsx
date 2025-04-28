@@ -95,13 +95,14 @@ export function RoleManagementPanel() {
         <div key={userRole.id} className="flex items-center justify-between mb-4 last:mb-0">
           <div>
             <p className="text-sm">
+              {/* Improved null checking of profiles and email property */}
               {userRole.profiles && 
                typeof userRole.profiles === 'object' && 
-               userRole.profiles !== null && 
-               'email' in userRole.profiles && 
-               userRole.profiles.email 
-                ? userRole.profiles.email 
-                : userRole.user_id}
+               userRole.profiles !== null ? 
+                ('email' in userRole.profiles && userRole.profiles.email ? 
+                  userRole.profiles.email : 
+                  userRole.user_id) : 
+                userRole.user_id}
             </p>
             <p className="text-xs text-gray-400">Current role: {userRole.role}</p>
           </div>
