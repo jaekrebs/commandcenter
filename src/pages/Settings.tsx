@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserSettingsPanel } from "../components/settings/UserSettingsPanel";
@@ -6,6 +5,7 @@ import { DataManagementPanel } from "../components/settings/DataManagementPanel"
 import { AboutPanel } from "../components/settings/AboutPanel";
 import { AuthSection } from "../components/auth/AuthSection";
 import { DataSyncSection } from "../components/data/DataSyncSection";
+import { CharacterProfilesSection } from "../components/settings/CharacterProfilesSection";
 
 type SettingsData = {
   username: string;
@@ -66,6 +66,7 @@ export default function Settings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="col-span-2">
           <div className="space-y-6">
+            <CharacterProfilesSection />
             <UserSettingsPanel 
               settings={settings}
               onSettingChange={handleSettingChange}
