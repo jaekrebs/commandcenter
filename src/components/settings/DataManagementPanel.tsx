@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { FileUploader } from "../FileUploader";
 
@@ -27,7 +26,7 @@ export function DataManagementPanel({ settings }: DataManagementPanelProps) {
 
     const dataStr = JSON.stringify(exportData, null, 2);
     const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-    const exportFileDefaultName = `v-dashboard-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const exportFileDefaultName = `v-dashboard-backup-${new Date().toISOString().slice(0, 10)}.json";
 
     const linkElement = document.createElement("a");
     linkElement.setAttribute("href", dataUri);
@@ -57,7 +56,7 @@ export function DataManagementPanel({ settings }: DataManagementPanelProps) {
     }
   };
 
-  const handleImportData = (type: 'notes' | 'npcs' | 'missions' | 'cyberware', data: any[]) => {
+  const handleImportData = (type: 'notes' | 'npc_relationships' | 'missions' | 'cyberware', data: any[]) => {
     const storageKey = `v-${type}`;
     const existingData = JSON.parse(localStorage.getItem(storageKey) || '[]');
     const newData = [...existingData, ...data];
@@ -107,7 +106,7 @@ export function DataManagementPanel({ settings }: DataManagementPanelProps) {
           
           <div>
             <h3 className="text-lg font-medium mb-2">Import NPCs</h3>
-            <FileUploader type="npcs" onDataImported={(data) => handleImportData('npcs', data)} />
+            <FileUploader type="npc_relationships" onDataImported={(data) => handleImportData('npc_relationships', data)} />
           </div>
           
           <div>
