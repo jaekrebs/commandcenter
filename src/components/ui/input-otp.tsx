@@ -1,10 +1,10 @@
-
 import * as React from "react"
 import { OTPInput, OTPInputContext } from "input-otp"
 import { Dot } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// Wrapper around the core OTPInput component
 const InputOTP = React.forwardRef<
   React.ElementRef<typeof OTPInput>,
   React.ComponentPropsWithoutRef<typeof OTPInput>
@@ -21,6 +21,7 @@ const InputOTP = React.forwardRef<
 ))
 InputOTP.displayName = "InputOTP"
 
+// Container for grouping slots
 const InputOTPGroup = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
@@ -29,27 +30,31 @@ const InputOTPGroup = React.forwardRef<
 ))
 InputOTPGroup.displayName = "InputOTPGroup"
 
+// Single slot for one character; attaches all handlers and state from context
 const InputOTPSlot = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div"> & { index: number }
 >(({ index, className, ...props }, ref) => {
-  const inputOTPContext = React.useContext(OTPInputContext)
-  // Add safety check to ensure slots exists and the index is valid
-  // Provide default values for properties we're expecting
-  const slot = inputOTPContext?.slots?.[index]
-  const char = slot?.char || ''
-  const hasFakeCaret = slot?.hasFakeCaret || false
-  const isActive = slot?.isActive || false
+  const { slots } = React.useContext(OTPInputContext) || {}
+  const slot = slots?.[index] || {}
+  // Destructure core data and grab all remaining props (handlers, a11y attrs)
+  const {
+    char = '',
+    hasFakeCaret = false,
+    isActive = false,
+    ...slotProps
+  } = slot as any
 
   return (
     <div
       ref={ref}
+      {...slotProps}
+      {...props}
       className={cn(
         "relative flex h-10 w-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
         isActive && "z-10 ring-2 ring-ring ring-offset-background",
         className
       )}
-      {...props}
     >
       {char}
       {hasFakeCaret && (
@@ -62,6 +67,7 @@ const InputOTPSlot = React.forwardRef<
 })
 InputOTPSlot.displayName = "InputOTPSlot"
 
+// Optional separator if you need dots between slots
 const InputOTPSeparator = React.forwardRef<
   React.ElementRef<"div">,
   React.ComponentPropsWithoutRef<"div">
