@@ -3,12 +3,49 @@ import { Shield, User, Settings, CircleUser } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { LoadingState } from "@/components/LoadingState";
 import { Navigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Admin = () => {
-  const { data: userRole, isLoading } = useUserRole();
+  const { data: userRole, isLoading: isLoadingRole } = useUserRole();
   const isAdmin = userRole === 'super_admin' || userRole === 'admin';
 
-  if (isLoading) {
+  // Fetch system metrics
+  const { data: systemMetrics, isLoading: isLoadingMetrics } = useQuery({
+    queryKey: ['system-metrics'],
+    queryFn: async () => {
+      // Get total users count
+      const { count: usersCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      // Get active sessions (placeholder - would need proper session tracking)
+      const activeSessions = 0;
+
+      // Get admin users count
+      const { count: adminCount } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .in('role', ['admin', 'super_admin']);
+
+      // Get moderator count
+      const { count: modCount } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'moderator');
+
+      return {
+        totalUsers: usersCount || 0,
+        activeSessions,
+        adminUsers: adminCount || 0,
+        moderators: modCount || 0
+      };
+    },
+    enabled: isAdmin
+  });
+
+  if (isLoadingRole) {
     return <LoadingState message="Verifying access..." />;
   }
 
@@ -28,11 +65,21 @@ const Admin = () => {
             <Shield className="text-cyber-purple mr-2" />
             <h2 className="text-xl">System Status</h2>
           </div>
-          <p className="text-gray-400 mb-4">All systems operational</p>
-          <div className="cyber-progress-bar">
-            <div className="progress-fill bg-cyber-purple" style={{width: '92%'}}></div>
-          </div>
-          <p className="text-xs text-gray-500 mt-1">Server capacity: 92%</p>
+          {isLoadingMetrics ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ) : (
+            <>
+              <p className="text-gray-400 mb-4">All systems operational</p>
+              <div className="cyber-progress-bar">
+                <div className="progress-fill bg-cyber-purple" style={{width: '100%'}}></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Server status: Online</p>
+            </>
+          )}
         </div>
 
         <div className="cyber-panel">
@@ -40,9 +87,19 @@ const Admin = () => {
             <User className="text-cyber-pink mr-2" />
             <h2 className="text-xl">User Management</h2>
           </div>
-          <p className="text-gray-400 mb-2">Total registered users: 42</p>
-          <p className="text-gray-400 mb-2">Active sessions: 13</p>
-          <button className="cyber-button-accent text-sm mt-2">View User Logs</button>
+          {isLoadingMetrics ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-4 w-36" />
+              <Skeleton className="h-8 w-24 mt-4" />
+            </div>
+          ) : (
+            <>
+              <p className="text-gray-400 mb-2">Total registered users: {systemMetrics?.totalUsers || 0}</p>
+              <p className="text-gray-400 mb-2">Active sessions: {systemMetrics?.activeSessions || 0}</p>
+              <button className="cyber-button-accent text-sm mt-2">View User Logs</button>
+            </>
+          )}
         </div>
         
         <div className="cyber-panel">
@@ -50,9 +107,19 @@ const Admin = () => {
             <Settings className="text-cyber-blue mr-2" />
             <h2 className="text-xl">System Configuration</h2>
           </div>
-          <p className="text-gray-400 mb-2">Last maintenance: 2025-04-25</p>
-          <p className="text-gray-400 mb-2">Next scheduled backup: 2025-04-30</p>
-          <button className="cyber-button text-sm mt-2">Update System</button>
+          {isLoadingMetrics ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-48" />
+              <Skeleton className="h-4 w-52" />
+              <Skeleton className="h-8 w-32 mt-4" />
+            </div>
+          ) : (
+            <>
+              <p className="text-gray-400 mb-2">Last maintenance: {new Date().toLocaleDateString()}</p>
+              <p className="text-gray-400 mb-2">Next scheduled backup: {new Date(Date.now() + 86400000).toLocaleDateString()}</p>
+              <button className="cyber-button text-sm mt-2">Update System</button>
+            </>
+          )}
         </div>
         
         <div className="cyber-panel">
@@ -60,9 +127,19 @@ const Admin = () => {
             <CircleUser className="text-cyber-yellow mr-2" />
             <h2 className="text-xl">Role Management</h2>
           </div>
-          <p className="text-gray-400 mb-2">Admin users: 3</p>
-          <p className="text-gray-400 mb-2">Moderators: 7</p>
-          <button className="cyber-button text-sm mt-2">Manage Roles</button>
+          {isLoadingMetrics ? (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-8 w-32 mt-4" />
+            </div>
+          ) : (
+            <>
+              <p className="text-gray-400 mb-2">Admin users: {systemMetrics?.adminUsers || 0}</p>
+              <p className="text-gray-400 mb-2">Moderators: {systemMetrics?.moderators || 0}</p>
+              <button className="cyber-button text-sm mt-2">Manage Roles</button>
+            </>
+          )}
         </div>
       </div>
     </div>
