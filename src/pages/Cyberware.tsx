@@ -6,7 +6,7 @@ import { CyberwareStats } from "@/components/cyberware/CyberwareStats";
 import { AddCyberwareForm } from "@/components/cyberware/AddCyberwareForm";
 import { CyberwareItemComponent } from "@/components/cyberware/CyberwareItem";
 
-export default function Cyberware() {
+export default function Gear() {
   const {
     cyberware,
     isLoading,
@@ -26,7 +26,7 @@ export default function Cyberware() {
   const [editForm, setEditForm] = useState<CyberwareItem | null>(null);
 
   if (isLoading) {
-    return <LoadingState message="Loading cyberware..." />;
+    return <LoadingState message="Loading gear..." />;
   }
 
   const handleAdd = () => {
@@ -96,13 +96,13 @@ export default function Cyberware() {
     <div className="container px-4 py-8 mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-white">
-          <span className="text-cyber-pink glow-text">Cyberware</span> Loadout
+          <span className="text-cyber-pink glow-text">Gear</span> Loadout
         </h1>
         <button
           onClick={() => setIsAdding(true)}
           className="cyber-button flex items-center gap-2"
         >
-          <span>Add Cyberware</span>
+          <span>Add Gear</span>
         </button>
       </div>
 
@@ -141,7 +141,7 @@ export default function Cyberware() {
       {cyberware.length === 0 && (
         <div className="cyber-panel text-center py-10">
           <p className="text-gray-400">
-            No cyberware found. Add some chrome to enhance your capabilities.
+            No gear found. Add some chrome to enhance your capabilities.
           </p>
         </div>
       )}

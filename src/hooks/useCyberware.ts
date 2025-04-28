@@ -29,7 +29,7 @@ export function useCyberware() {
       }
 
       const { data, error } = await supabase
-        .from("cyberware")
+        .from("gear")
         .select("*")
         .eq("character_profile_id", profile.selected_character_profile_id);
 
@@ -50,7 +50,7 @@ export function useCyberware() {
       }
 
       const { data, error } = await supabase
-        .from("cyberware")
+        .from("gear")
         .insert({
           ...newItem,
           character_profile_id: profile.selected_character_profile_id
@@ -65,13 +65,13 @@ export function useCyberware() {
       queryClient.invalidateQueries({ queryKey: ["cyberware"] });
       toast({
         title: "Success",
-        description: "Cyberware added successfully"
+        description: "Gear added successfully"
       });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add cyberware",
+        description: error instanceof Error ? error.message : "Failed to add gear",
         variant: "destructive"
       });
     }
@@ -80,7 +80,7 @@ export function useCyberware() {
   const updateCyberwareMutation = useMutation({
     mutationFn: async (item: CyberwareItem) => {
       const { error } = await supabase
-        .from("cyberware")
+        .from("gear")
         .update(item)
         .eq("id", item.id);
 
@@ -90,13 +90,13 @@ export function useCyberware() {
       queryClient.invalidateQueries({ queryKey: ["cyberware"] });
       toast({
         title: "Success",
-        description: "Cyberware updated successfully"
+        description: "Gear updated successfully"
       });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update cyberware",
+        description: error instanceof Error ? error.message : "Failed to update gear",
         variant: "destructive"
       });
     }
@@ -105,7 +105,7 @@ export function useCyberware() {
   const deleteCyberwareMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
-        .from("cyberware")
+        .from("gear")
         .delete()
         .eq("id", id);
 
@@ -115,13 +115,13 @@ export function useCyberware() {
       queryClient.invalidateQueries({ queryKey: ["cyberware"] });
       toast({
         title: "Success",
-        description: "Cyberware deleted successfully"
+        description: "Gear deleted successfully"
       });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete cyberware",
+        description: error instanceof Error ? error.message : "Failed to delete gear",
         variant: "destructive"
       });
     }

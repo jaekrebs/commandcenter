@@ -13,8 +13,8 @@ export type Database = {
         Row: {
           class: string
           created_at: string | null
-          cyberware: string | null
           gear: string | null
+          gear_loadout: string | null
           id: string
           lifepath: string
           name: string
@@ -25,8 +25,8 @@ export type Database = {
         Insert: {
           class?: string
           created_at?: string | null
-          cyberware?: string | null
           gear?: string | null
+          gear_loadout?: string | null
           id?: string
           lifepath?: string
           name?: string
@@ -37,8 +37,8 @@ export type Database = {
         Update: {
           class?: string
           created_at?: string | null
-          cyberware?: string | null
           gear?: string | null
+          gear_loadout?: string | null
           id?: string
           lifepath?: string
           name?: string
@@ -56,7 +56,7 @@ export type Database = {
           },
         ]
       }
-      cyberware: {
+      gear: {
         Row: {
           character_profile_id: string | null
           created_at: string | null
@@ -95,7 +95,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "cyberware_character_profile_id_fkey"
+            foreignKeyName: "gear_character_profile_id_fkey"
             columns: ["character_profile_id"]
             isOneToOne: false
             referencedRelation: "character_profiles"

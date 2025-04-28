@@ -1,32 +1,26 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, Shield, LogIn, LogOut } from "lucide-react";
+import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, Shield, LogIn, LogOut, Sun, Moon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "@/components/ui/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useTheme } from "@/components/ui/use-theme";
+
+const navLinkClasses = "text-sm font-medium text-gray-300 hover:text-white transition-colors";
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { data: userRole } = useUserRole();
   const isAdmin = userRole === 'super_admin' || userRole === 'admin';
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     try {
@@ -49,7 +43,7 @@ export function Navigation() {
     { name: "Dashboard", path: "/", icon: <Home size={18} /> },
     { name: "NPCs", path: "/npc-relationships", icon: <Users size={18} /> },
     { name: "Missions", path: "/missions", icon: <FileText size={18} /> },
-    { name: "Cyberware", path: "/cyberware", icon: <Cpu size={18} /> },
+    { name: "Gear", path: "/gear", icon: <Cpu size={18} /> },
     { name: "Notes", path: "/notes", icon: <FileEdit size={18} /> },
     { name: "Settings", path: "/settings", icon: <Settings size={18} /> },
     ...(isAdmin ? [
@@ -58,14 +52,14 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="bg-cyber-darkgray border-b border-cyber-purple/20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-cyber-black border-b border-cyber-purple/20">
+      <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Link to={user ? "/" : "/auth"} className="flex items-center">
                 <Shield className="text-cyber-purple h-5 w-5 mr-2" />
-                <span className="text-white font-bold">Access Terminal</span>
+                <span className="text-white font-bold">Night City Terminal</span>
               </Link>
             </div>
             <div className="hidden md:block">
@@ -87,10 +81,42 @@ export function Navigation() {
               </div>
             </div>
           </div>
-          <div className="-mr-2 flex md:hidden">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="p-2 rounded-md hover:bg-cyber-purple/10 transition-colors"
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4 text-gray-400" /> : <Moon className="h-4 w-4 text-gray-400" />}
+            </button>
+
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="outline-none focus:outline-none">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={user?.user_metadata?.avatar_url} />
+                      <AvatarFallback>
+                        {user?.email?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 mr-2">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-cyber-purple/10 focus:outline-none"
+              className="md:hidden text-gray-400 hover:text-white focus:outline-none"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -99,7 +125,7 @@ export function Navigation() {
       </div>
 
       {isOpen && (
-        <div className="md:hidden">
+        <div className="md:hidden bg-cyber-black border-t border-cyber-purple/20 px-4 py-2">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-cyber-darkgray/90 backdrop-blur-sm">
             {navItems.map((item) => (
               <Link

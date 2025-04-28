@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Dashboard from "./pages/Dashboard";
 import NPCRelationships from "./pages/NPCRelationships";
 import Missions from "./pages/Missions";
-import Cyberware from "./pages/Cyberware";
+import Gear from "./pages/Cyberware"; // Renamed import but keeping file path for now
 import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
@@ -17,6 +17,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { Navigation } from "./components/Navigation";
 import { LoadingState } from "@/components/LoadingState";
+import { ThemeProvider } from "./components/ui/use-theme";
 
 const queryClient = new QueryClient();
 
@@ -59,105 +60,107 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <div className="min-h-screen bg-cyber-black text-white">
-          <Routes>
-            <Route path="/auth" element={<ProtectedRoute><Auth /></ProtectedRoute>} />
-            <Route 
-              path="/"
-              element={
-                <>
-                  <Navigation />
-                  <div className="pt-16">
-                    <ProtectedRoute><Dashboard /></ProtectedRoute>
-                  </div>
-                </>
-              } 
-            />
-            <Route 
-              path="/npc-relationships" 
-              element={
-                <>
-                  <Navigation />
-                  <div className="pt-16">
-                    <ProtectedRoute><NPCRelationships /></ProtectedRoute>
-                  </div>
-                </>
-              } 
-            />
-            <Route 
-              path="/missions" 
-              element={
-                <>
-                  <Navigation />
-                  <div className="pt-16">
-                    <ProtectedRoute><Missions /></ProtectedRoute>
-                  </div>
-                </>
-              } 
-            />
-            <Route 
-              path="/cyberware" 
-              element={
-                <>
-                  <Navigation />
-                  <div className="pt-16">
-                    <ProtectedRoute><Cyberware /></ProtectedRoute>
-                  </div>
-                </>
-              } 
-            />
-            <Route 
-              path="/notes" 
-              element={
-                <>
-                  <Navigation />
-                  <div className="pt-16">
-                    <ProtectedRoute><Notes /></ProtectedRoute>
-                  </div>
-                </>
-              } 
-            />
-            <Route 
-              path="/settings" 
-              element={
-                <>
-                  <Navigation />
-                  <div className="pt-16">
-                    <ProtectedRoute><Settings /></ProtectedRoute>
-                  </div>
-                </>
-              } 
-            />
-            <Route 
-              path="/admin" 
-              element={
-                <>
-                  <Navigation />
-                  <div className="pt-16">
-                    <ProtectedRoute><Admin /></ProtectedRoute>
-                  </div>
-                </>
-              } 
-            />
-            <Route 
-              path="*" 
-              element={
-                <>
-                  <Navigation />
-                  <div className="pt-16">
-                    <ProtectedRoute><NotFound /></ProtectedRoute>
-                  </div>
-                </>
-              } 
-            />
-          </Routes>
-        </div>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <div className="min-h-screen bg-cyber-black text-white">
+            <Routes>
+              <Route path="/auth" element={<ProtectedRoute><Auth /></ProtectedRoute>} />
+              <Route 
+                path="/"
+                element={
+                  <>
+                    <Navigation />
+                    <div className="pt-16">
+                      <ProtectedRoute><Dashboard /></ProtectedRoute>
+                    </div>
+                  </>
+                } 
+              />
+              <Route 
+                path="/npc-relationships" 
+                element={
+                  <>
+                    <Navigation />
+                    <div className="pt-16">
+                      <ProtectedRoute><NPCRelationships /></ProtectedRoute>
+                    </div>
+                  </>
+                } 
+              />
+              <Route 
+                path="/missions" 
+                element={
+                  <>
+                    <Navigation />
+                    <div className="pt-16">
+                      <ProtectedRoute><Missions /></ProtectedRoute>
+                    </div>
+                  </>
+                } 
+              />
+              <Route 
+                path="/gear" 
+                element={
+                  <>
+                    <Navigation />
+                    <div className="pt-16">
+                      <ProtectedRoute><Gear /></ProtectedRoute>
+                    </div>
+                  </>
+                } 
+              />
+              <Route 
+                path="/notes" 
+                element={
+                  <>
+                    <Navigation />
+                    <div className="pt-16">
+                      <ProtectedRoute><Notes /></ProtectedRoute>
+                    </div>
+                  </>
+                } 
+              />
+              <Route 
+                path="/settings" 
+                element={
+                  <>
+                    <Navigation />
+                    <div className="pt-16">
+                      <ProtectedRoute><Settings /></ProtectedRoute>
+                    </div>
+                  </>
+                } 
+              />
+              <Route 
+                path="/admin" 
+                element={
+                  <>
+                    <Navigation />
+                    <div className="pt-16">
+                      <ProtectedRoute><Admin /></ProtectedRoute>
+                    </div>
+                  </>
+                } 
+              />
+              <Route 
+                path="*" 
+                element={
+                  <>
+                    <Navigation />
+                    <div className="pt-16">
+                      <ProtectedRoute><NotFound /></ProtectedRoute>
+                    </div>
+                  </>
+                } 
+              />
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
