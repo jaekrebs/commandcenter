@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings } from "lucide-react";
+import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, LogIn } from "lucide-react";
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -48,7 +47,10 @@ export function Navigation() {
           </div>
           <div className="hidden md:block">
             <div className="ml-4 flex items-center md:ml-6">
-              <button className="cyber-button text-sm">Sync Data</button>
+              <Link to="/auth" className="cyber-button text-sm flex items-center gap-2">
+                <LogIn size={16} />
+                Access Terminal
+              </Link>
             </div>
           </div>
           <div className="-mr-2 flex md:hidden">
@@ -80,7 +82,14 @@ export function Navigation() {
                 <span>{item.name}</span>
               </Link>
             ))}
-            <button className="cyber-button w-full mt-4 text-sm">Sync Data</button>
+            <Link
+              to="/auth"
+              className="cyber-button w-full mt-4 text-sm flex items-center justify-center gap-2"
+              onClick={() => setIsOpen(false)}
+            >
+              <LogIn size={16} />
+              Access Terminal
+            </Link>
           </div>
         </div>
       )}

@@ -10,6 +10,7 @@ import Missions from "./pages/Missions";
 import Cyberware from "./pages/Cyberware";
 import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { Navigation } from "./components/Navigation";
 
@@ -26,6 +27,7 @@ const App = () => (
           <main>
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/auth" element={<Auth />} />
               <Route path="/npc-relationships" element={<NPCRelationships />} />
               <Route path="/missions" element={<Missions />} />
               <Route path="/cyberware" element={<Cyberware />} />

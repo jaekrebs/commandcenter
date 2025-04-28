@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           class: string
           created_at: string | null
+          cyberware: string | null
           gear: string | null
           id: string
           lifepath: string
@@ -24,6 +25,7 @@ export type Database = {
         Insert: {
           class?: string
           created_at?: string | null
+          cyberware?: string | null
           gear?: string | null
           id?: string
           lifepath?: string
@@ -35,6 +37,7 @@ export type Database = {
         Update: {
           class?: string
           created_at?: string | null
+          cyberware?: string | null
           gear?: string | null
           id?: string
           lifepath?: string
@@ -102,7 +105,7 @@ export type Database = {
           name: string
           notes: string | null
           profile_id: string | null
-          progress: number | null
+          progress_percent: number | null
           type: string
           updated_at: string | null
         }
@@ -113,7 +116,7 @@ export type Database = {
           name: string
           notes?: string | null
           profile_id?: string | null
-          progress?: number | null
+          progress_percent?: number | null
           type: string
           updated_at?: string | null
         }
@@ -124,7 +127,7 @@ export type Database = {
           name?: string
           notes?: string | null
           profile_id?: string | null
-          progress?: number | null
+          progress_percent?: number | null
           type?: string
           updated_at?: string | null
         }
@@ -182,7 +185,7 @@ export type Database = {
           image: string | null
           love: number | null
           lust: number | null
-          name: string
+          npc_name: string
           profile_id: string | null
           trust: number | null
           updated_at: string | null
@@ -195,7 +198,7 @@ export type Database = {
           image?: string | null
           love?: number | null
           lust?: number | null
-          name: string
+          npc_name: string
           profile_id?: string | null
           trust?: number | null
           updated_at?: string | null
@@ -208,7 +211,7 @@ export type Database = {
           image?: string | null
           love?: number | null
           lust?: number | null
-          name?: string
+          npc_name?: string
           profile_id?: string | null
           trust?: number | null
           updated_at?: string | null
