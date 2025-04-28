@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Home, Users, FileText, Cpu, FileEdit, Settings, LogIn } from "lucide-react";
@@ -45,13 +46,14 @@ export function Navigation() {
               </div>
             </div>
           </div>
-          <div className="hidden md:block">
-            <div className="ml-4 flex items-center md:ml-6">
-              <Link to="/auth" className="cyber-button text-sm flex items-center gap-2">
-                <LogIn size={16} />
-                Access Terminal
-              </Link>
-            </div>
+          <div className="hidden md:flex md:items-center md:ml-6">
+            <Link 
+              to="/auth" 
+              className="cyber-button text-sm flex items-center gap-2 hover:bg-cyber-purple/20"
+            >
+              <LogIn size={16} />
+              Access Terminal
+            </Link>
           </div>
           <div className="-mr-2 flex md:hidden">
             <button
