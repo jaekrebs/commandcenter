@@ -1,3 +1,4 @@
+// src/components/settings/CharacterProfilesSection.tsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +14,9 @@ export function CharacterProfilesSection() {
 
   const createNewProfile = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
+      // 1) Get the current user session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.user) {
         toast({
           title: "Error",
           description: "You must be logged in to create a character profile",
@@ -22,24 +24,28 @@ export function CharacterProfilesSection() {
         });
         return;
       }
+      const userId = session.user.id;
 
-      const { data, error } = await supabase
-        .from('character_profiles')
-        .insert([{ name: newProfileName, profile_id: session.user.id }])
-        .select()
+      // 2) Ensure a row exists in `profiles` for this user (satisfy FK)
+      await supabase
+        .from("profiles")
+        .upsert({ id: userId })
         .single();
 
+      // 3) Insert the new character profile
+      const { data, error } = await supabase
+        .from("character_profiles")
+        .insert([{ name: newProfileName, profile_id: userId }])
+        .select()
+        .single();
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "New character profile created",
-      });
+      // 4) Notify success, clear input, and refresh the list
+      toast({ title: "Success", description: "New character profile created" });
       setNewProfileName("");
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ["characterProfiles"] });
     } catch (err: any) {
-      console.error('Error creating profile:', err);
+      console.error("Error creating profile:", err);
       toast({
         title: "Error",
         description: err.message || "Failed to create character profile",
@@ -52,6 +58,7 @@ export function CharacterProfilesSection() {
     <div className="cyber-panel">
       <h2 className="text-xl font-bold mb-4">Character Profiles</h2>
       <div className="space-y-4">
+
         {/* Create new profile */}
         <div className="flex gap-2">
           <Input
@@ -69,11 +76,9 @@ export function CharacterProfilesSection() {
 
         {/* List existing profiles */}
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-400">
-            Your Characters
-          </h3>
+          <h3 className="text-sm font-medium text-gray-400">Your Characters</h3>
           {isLoading ? (
-            <p>Loading profiles...</p>
+            <p>Loading profiles…</p>
           ) : characterProfiles.length === 0 ? (
             <p className="text-sm text-gray-500">No character profiles yet</p>
           ) : (
@@ -94,6 +99,7 @@ export function CharacterProfilesSection() {
             </div>
           )}
         </div>
+
       </div>
     </div>
   );
