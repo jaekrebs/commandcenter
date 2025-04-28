@@ -59,7 +59,7 @@ export function Navigation() {
             <div className="flex-shrink-0">
               <Link to={user ? "/" : "/auth"} className="flex items-center">
                 <Shield className="text-cyber-purple h-5 w-5 mr-2" />
-                <span className="text-white font-bold">Night City Terminal</span>
+                <span className="text-white font-bold">Access Terminal</span>
               </Link>
             </div>
             <div className="hidden md:block">

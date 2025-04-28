@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,12 +8,13 @@ import { supabase } from "@/integrations/supabase/client";
 import Dashboard from "./pages/Dashboard";
 import NPCRelationships from "./pages/NPCRelationships";
 import Missions from "./pages/Missions";
-import Gear from "./pages/Cyberware"; // Renamed import but keeping file path for now
+import Gear from "./pages/Cyberware";
 import Notes from "./pages/Notes";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Uploads from "./pages/Uploads";
 import { Navigation } from "./components/Navigation";
 import { LoadingState } from "@/components/LoadingState";
 import { ThemeProvider } from "./components/ui/use-theme";
@@ -40,17 +40,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
   
-  // Still checking auth state
   if (isAuthenticated === null) {
     return <LoadingState message="Authenticating..." />;
   }
   
-  // Not authenticated - redirect to auth page
   if (!isAuthenticated && location.pathname !== '/auth') {
     return <Navigate to="/auth" replace />;
   }
   
-  // Authenticated and trying to access auth page - redirect to dashboard
   if (isAuthenticated && location.pathname === '/auth') {
     return <Navigate to="/" replace />;
   }
@@ -141,6 +138,17 @@ const App = () => (
                     <Navigation />
                     <div className="pt-16">
                       <ProtectedRoute><Admin /></ProtectedRoute>
+                    </div>
+                  </>
+                } 
+              />
+              <Route 
+                path="/uploads" 
+                element={
+                  <>
+                    <Navigation />
+                    <div className="pt-16">
+                      <ProtectedRoute><Uploads /></ProtectedRoute>
                     </div>
                   </>
                 } 
