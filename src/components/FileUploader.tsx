@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { Upload, AlertCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
-type FileType = 'notes' | 'npcs' | 'missions' | 'cyberware' | 'character_profiles';
+// Update to match tables in Supabase
+type FileType = 'notes' | 'npc_relationships' | 'missions' | 'cyberware' | 'character_profiles';
 
 type HeaderMapping = {
   [key in FileType]: string[];
@@ -11,7 +13,7 @@ type HeaderMapping = {
 
 const HEADER_MAPPINGS: HeaderMapping = {
   notes: ['Note title', 'Note content', 'Note date'],
-  npcs: ['NPC name', 'Friendship', 'Trust', 'Lust', 'Love', 'Image', 'Background'],
+  npc_relationships: ['NPC name', 'Friendship', 'Trust', 'Lust', 'Love', 'Image', 'Background'],
   missions: ['Mission name', 'Type', 'Progress', 'Notes', 'Completed'],
   cyberware: ['Name', 'Type', 'Status', 'Description', 'Installation date'],
   character_profiles: ['Character name', 'Class', 'Level', 'Alignment', 'Background']
@@ -33,8 +35,8 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
   };
 
   const syncToSupabase = async (data: any[]) => {
-    const { data: session } = await supabase.auth.getSession();
-    if (!session?.user) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session?.user) {
       toast({
         title: "Authentication required",
         description: "Please log in to sync data with your profile.",
@@ -50,19 +52,59 @@ export function FileUploader({ type, onDataImported }: FileUploaderProps) {
             .from('character_profiles')
             .upsert(data.map(profile => ({
               ...profile,
-              profile_id: session.user.id,
+              profile_id: sessionData.session.user.id,
               updated_at: new Date().toISOString()
             })));
           
           if (profileError) throw profileError;
           break;
           
-        default:
-          const { error } = await supabase
-            .from(type)
-            .upsert(data);
+        case 'npc_relationships':
+          const { error: npcError } = await supabase
+            .from('npc_relationships')
+            .upsert(data.map(npc => ({
+              ...npc,
+              profile_id: sessionData.session.user.id,
+              updated_at: new Date().toISOString()
+            })));
           
-          if (error) throw error;
+          if (npcError) throw npcError;
+          break;
+          
+        case 'notes':
+          const { error: notesError } = await supabase
+            .from('notes')
+            .upsert(data.map(note => ({
+              ...note,
+              profile_id: sessionData.session.user.id,
+              updated_at: new Date().toISOString()
+            })));
+          
+          if (notesError) throw notesError;
+          break;
+          
+        case 'missions':
+          const { error: missionsError } = await supabase
+            .from('missions')
+            .upsert(data.map(mission => ({
+              ...mission,
+              profile_id: sessionData.session.user.id,
+              updated_at: new Date().toISOString()
+            })));
+          
+          if (missionsError) throw missionsError;
+          break;
+          
+        case 'cyberware':
+          const { error: cyberwareError } = await supabase
+            .from('cyberware')
+            .upsert(data.map(item => ({
+              ...item,
+              profile_id: sessionData.session.user.id,
+              updated_at: new Date().toISOString()
+            })));
+          
+          if (cyberwareError) throw cyberwareError;
           break;
       }
 
