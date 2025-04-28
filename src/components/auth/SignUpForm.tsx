@@ -19,7 +19,8 @@ export function SignUpForm() {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // 1. Sign up the user
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -29,12 +30,29 @@ export function SignUpForm() {
         },
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
+      
+      if (authData.user) {
+        // 2. Create the user role as super_admin
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert([
+            { 
+              user_id: authData.user.id,
+              role: 'super_admin'
+            }
+          ]);
 
-      toast({
-        title: "Account created",
-        description: "Please check your email to verify your account.",
-      });
+        if (roleError) {
+          console.error("Error setting user role:", roleError);
+          throw new Error("Failed to set user role");
+        }
+
+        toast({
+          title: "Account created",
+          description: "Your super admin account has been created successfully.",
+        });
+      }
       
       navigate("/");
     } catch (error) {
@@ -89,11 +107,11 @@ export function SignUpForm() {
         disabled={loading}
       >
         {loading ? (
-          "Creating Account..."
+          "Creating Super Admin Account..."
         ) : (
           <>
             <Shield className="w-4 h-4" />
-            <span>Create Account</span>
+            <span>Create Super Admin Account</span>
           </>
         )}
       </Button>
