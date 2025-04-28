@@ -62,7 +62,24 @@ export function SignUpForm() {
       }
 
       // If we have a session, it means email confirmation is disabled
-      // so we can proceed with setting up the user role and access code
+      // Sign in the user to ensure we have a valid session
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (signInError) {
+        console.error("Sign in error after signup:", signInError);
+        throw signInError;
+      }
+      
+      if (!signInData.session) {
+        throw new Error("Failed to establish session after signup");
+      }
+      
+      console.log("Authenticated session established:", signInData.session);
+      
+      // Now proceed with setting up the user role and access code
       await setupUserAccount(authData.user.id);
       
     } catch (error: any) {
@@ -80,34 +97,79 @@ export function SignUpForm() {
   // Function to complete account setup after confirmation
   const setupUserAccount = async (userId: string) => {
     try {
-      // Create the user role as super_admin
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert([
-          { 
-            user_id: userId,
-            role: 'super_admin'
-          }
-        ]);
-
-      if (roleError) {
-        console.error("Error setting user role:", roleError);
-        throw new Error("Failed to set user role");
+      console.log("Setting up user account for:", userId);
+      
+      // Get current session to ensure we're authenticated
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error("No active session found. Please sign in first.");
       }
       
-      // Store the access code
-      const { error: accessCodeError } = await supabase
-        .from('access_codes')
-        .insert([
-          {
-            user_id: userId,
-            code: accessCode
-          }
-        ]);
+      console.log("Active session confirmed for role setup");
+      
+      // Check if the role already exists to avoid duplicate key error
+      const { data: existingRole, error: roleCheckError } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+        
+      if (roleCheckError && roleCheckError.code !== 'PGRST116') { // PGRST116 is "no rows returned" which is expected
+        console.error("Error checking existing role:", roleCheckError);
+      }
+      
+      if (existingRole) {
+        console.log("User role already exists, skipping creation");
+      } else {
+        // Create the user role as super_admin
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert([
+            { 
+              user_id: userId,
+              role: 'super_admin'
+            }
+          ]);
 
-      if (accessCodeError) {
-        console.error("Error storing access code:", accessCodeError);
-        throw new Error("Failed to store access code");
+        if (roleError) {
+          console.error("Error setting user role:", roleError);
+          throw new Error("Failed to set user role");
+        }
+        
+        console.log("User role set successfully");
+      }
+      
+      // Check if access code already exists
+      const { data: existingCode, error: codeCheckError } = await supabase
+        .from('access_codes')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+        
+      if (codeCheckError && codeCheckError.code !== 'PGRST116') {
+        console.error("Error checking existing access code:", codeCheckError);
+      }
+      
+      if (existingCode) {
+        console.log("Access code already exists, skipping creation");
+      } else {
+        // Store the access code
+        const { error: accessCodeError } = await supabase
+          .from('access_codes')
+          .insert([
+            {
+              user_id: userId,
+              code: accessCode
+            }
+          ]);
+
+        if (accessCodeError) {
+          console.error("Error storing access code:", accessCodeError);
+          throw new Error("Failed to store access code");
+        }
+        
+        console.log("Access code stored successfully");
       }
 
       toast({
