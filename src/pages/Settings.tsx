@@ -6,7 +6,7 @@ import { DataManagementPanel } from "@/components/settings/DataManagementPanel";
 import { AboutPanel } from "@/components/settings/AboutPanel";
 import { AuthSection } from "@/components/auth/AuthSection";
 import { AccessCodeSection } from "@/components/auth/AccessCodeSection";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("user-settings");
