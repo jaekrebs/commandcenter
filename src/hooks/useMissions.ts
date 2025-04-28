@@ -82,8 +82,11 @@ export function useMissions() {
       const { error } = await supabase
         .from("missions")
         .update({
-          title: mission.title,
-          content: mission.content,
+          name: mission.name,
+          notes: mission.notes,
+          type: mission.type,
+          progress_percent: mission.progress_percent,
+          completed: mission.completed,
           updated_at: new Date().toISOString()
         })
         .eq("id", mission.id);
@@ -134,9 +137,9 @@ export function useMissions() {
   return {
     missions,
     isLoading,
-    addNote: addMission.mutate,
-    updateNote: updateMission.mutate,
-    deleteNote: deleteMission.mutate,
+    addMission: addMission.mutate,
+    updateMission: updateMission.mutate,
+    deleteMission: deleteMission.mutate,
     hasCharacter: !!userProfile?.selected_character_profile_id
   };
 }

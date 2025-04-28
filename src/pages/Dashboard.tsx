@@ -1,7 +1,7 @@
 
 import { CharacterProfile } from "../components/CharacterProfile";
 import { RelicStatus } from "../components/RelicStatus";
-import { MissionCard, Mission } from "../components/MissionCard";
+import { MissionCard } from "../components/MissionCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/LoadingState";
