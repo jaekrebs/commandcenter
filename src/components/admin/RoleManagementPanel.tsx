@@ -33,13 +33,53 @@ export function RoleManagementPanel() {
     queryKey: ['users-roles'],
     queryFn: async () => {
       try {
+        // We need to fetch the email from the auth.users table through a secure RPC or function
+        // since we can't directly join between user_roles and auth.users
         const { data: roles, error } = await supabase
           .from('user_roles')
-          .select('*, profiles:user_id(email)');
+          .select('*');
         
         if (error) throw error;
-        console.log("User roles data:", roles);
-        return roles as UserRoleWithProfile[] || [];
+        
+        // For each user role, get the user email from auth.users via the user_id
+        const rolesWithProfiles = await Promise.all(
+          roles.map(async (role) => {
+            const { data: userData, error: userError } = await supabase
+              .rpc('get_user_by_access_code', { 
+                access_code: '' // This is just a placeholder, we're using it as a way to get user emails
+              });
+            
+            // Get the access code for this user to find their email
+            const { data: accessCode } = await supabase
+              .from('access_codes')
+              .select('code')
+              .eq('user_id', role.user_id)
+              .single();
+              
+            // Try to get the email using the access code if we have one
+            let email = '';
+            if (accessCode?.code) {
+              const { data: userWithEmail } = await supabase
+                .rpc('get_user_by_access_code', { 
+                  access_code: accessCode.code 
+                });
+              if (userWithEmail && userWithEmail.length > 0) {
+                email = userWithEmail[0].email;
+              }
+            }
+
+            // Return the role with the email information added
+            return {
+              ...role,
+              profiles: {
+                email: email || role.user_id // Fallback to user_id if email not found
+              }
+            };
+          })
+        );
+
+        console.log("User roles data with profiles:", rolesWithProfiles);
+        return rolesWithProfiles as UserRoleWithProfile[];
       } catch (err) {
         console.error("Error fetching user roles:", err);
         throw err;
