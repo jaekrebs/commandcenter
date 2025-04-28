@@ -20,7 +20,7 @@ export function SignUpForm() {
     setLoading(true);
     
     try {
-      // 1. Sign up the user first
+      // 1. Sign up the user using supabase.auth.signUp
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -31,23 +31,33 @@ export function SignUpForm() {
         },
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        console.error("Sign up error:", signUpError);
+        throw signUpError;
+      }
       
       if (!authData.user) {
         throw new Error("Failed to create user account");
       }
 
-      // Wait briefly for the session to be established
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 2. Sign in the user immediately to get a valid session
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-      // Get the latest session to ensure we're authenticated when making DB calls
-      const { data: sessionData } = await supabase.auth.getSession();
-      
-      if (!sessionData.session) {
-        throw new Error("Authentication session not established");
+      if (signInError) {
+        console.error("Sign in error after signup:", signInError);
+        throw signInError;
       }
 
-      // 2. Create the user role as super_admin
+      if (!signInData.session) {
+        throw new Error("Failed to establish session");
+      }
+
+      console.log("Session established:", signInData.session.access_token ? "Token exists" : "No token");
+
+      // 3. Create the user role as super_admin
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert([
@@ -62,7 +72,7 @@ export function SignUpForm() {
         throw new Error("Failed to set user role");
       }
       
-      // 3. Store the access code
+      // 4. Store the access code
       const { error: accessCodeError } = await supabase
         .from('access_codes')
         .insert([
