@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +15,17 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
+// Define the type for user role data
+type UserRoleWithProfile = {
+  id: string;
+  user_id: string;
+  role: 'admin' | 'user' | 'super_admin';
+  profiles?: {
+    email: string;
+  } | null;
+  created_at?: string | null;
+};
+
 export function RoleManagementPanel() {
   const queryClient = useQueryClient();
 
@@ -27,7 +39,7 @@ export function RoleManagementPanel() {
         
         if (error) throw error;
         console.log("User roles data:", roles);
-        return roles || [];
+        return roles as UserRoleWithProfile[] || [];
       } catch (err) {
         console.error("Error fetching user roles:", err);
         throw err;
@@ -36,7 +48,7 @@ export function RoleManagementPanel() {
   });
 
   const updateRole = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: 'admin' | 'user' }) => {
+    mutationFn: async ({ userId, role }: { userId: string; role: 'admin' | 'user' | 'super_admin' }) => {
       const { error } = await supabase
         .from('user_roles')
         .update({ role })
@@ -100,7 +112,7 @@ export function RoleManagementPanel() {
           </div>
           <Select
             value={userRole.role}
-            onValueChange={(newRole: 'admin' | 'user') => {
+            onValueChange={(newRole: 'admin' | 'user' | 'super_admin') => {
               updateRole.mutate({ userId: userRole.user_id, role: newRole });
             }}
           >
@@ -108,6 +120,7 @@ export function RoleManagementPanel() {
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="super_admin">Super Admin</SelectItem>
               <SelectItem value="admin">Admin</SelectItem>
               <SelectItem value="user">User</SelectItem>
             </SelectContent>
