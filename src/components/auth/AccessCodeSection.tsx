@@ -1,7 +1,5 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -23,90 +21,77 @@ export function AccessCodeSection() {
 
     setLoading(true);
     try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) throw userError;
-      
-      if (!userData.user) {
-        throw new Error("No authenticated user found");
-      }
-      
-      // Check if an access code already exists for this user
-      const { data: existingCode, error: checkError } = await supabase
-        .from('access_codes')
-        .select('*')
-        .eq('user_id', userData.user.id)
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session?.user) throw new Error("No authenticated user found");
+
+      const { data: existing, error: fetchError } = await supabase
+        .from("access_codes")
+        .select("code")
+        .eq("user_id", session.user.id)
         .maybeSingle();
-        
-      if (checkError) throw checkError;
-      
-      let operationResult;
-      
-      if (existingCode) {
-        // Update existing code
-        operationResult = await supabase
-          .from('access_codes')
+      if (fetchError) throw fetchError;
+
+      let result;
+      if (existing) {
+        result = await supabase
+          .from("access_codes")
           .update({ code: accessCode })
-          .eq('user_id', userData.user.id);
+          .eq("user_id", session.user.id);
       } else {
-        // Create new access code
-        operationResult = await supabase
-          .from('access_codes')
-          .insert([{ user_id: userData.user.id, code: accessCode }]);
+        result = await supabase
+          .from("access_codes")
+          .insert([{ user_id: session.user.id, code: accessCode }]);
       }
-      
-      if (operationResult.error) throw operationResult.error;
-      
+      if (result.error) throw result.error;
+
       toast({
         title: "Access code updated",
-        description: "Your access code has been successfully updated."
+        description: "Your access code has been successfully updated.",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch the user's current access code when component mounts
-  const fetchAccessCode = async () => {
-    try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) throw userError;
-      
-      if (!userData.user) return;
-      
-      const { data, error } = await supabase
-        .from('access_codes')
-        .select('code')
-        .eq('user_id', userData.user.id)
-        .maybeSingle();
-        
-      if (error) throw error;
-      
-      if (data?.code) {
-        setAccessCode(data.code);
-      }
-    } catch (error) {
-      console.error("Error fetching access code:", error);
-    }
-  };
-
-  // Call fetchAccessCode when the component mounts
   useEffect(() => {
-    fetchAccessCode();
+    (async () => {
+      try {
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session?.user) return;
+
+        const { data, error } = await supabase
+          .from("access_codes")
+          .select("code")
+          .eq("user_id", session.user.id)
+          .maybeSingle();
+        if (error) throw error;
+        if (data?.code) setAccessCode(data.code);
+      } catch (err) {
+        console.error("Error fetching access code:", err);
+      }
+    })();
   }, []);
 
   return (
     <div className="cyber-panel">
       <h2 className="text-xl font-bold mb-4">Access Code</h2>
       <p className="text-sm text-gray-300 mb-6">
-        Set or update your 4-digit access code. This code allows quick login to your account.
+        Set or update your 4-digit access code. This code allows quick login to
+        your account.
       </p>
 
       <div className="space-y-6">
@@ -119,10 +104,11 @@ export function AccessCodeSection() {
               onChange={setAccessCode}
               render={({ slots }) => (
                 <InputOTPGroup className="gap-4">
-                  {slots.map((slot, index) => (
+                  {slots.map((slot, idx) => (
                     <InputOTPSlot
-                      key={index}
-                      index={index}
+                      key={idx}
+                      index={idx}       // each slot’s index
+                      {...slot}         // spread char, focus, onChange, etc.
                       className="w-14 h-14 text-2xl bg-cyber-darkgray/50 border-cyber-purple/30"
                     />
                   ))}
