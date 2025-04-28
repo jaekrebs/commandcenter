@@ -8,7 +8,7 @@ import { Terminal } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 export function AccessCodeForm() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [accessCode, setAccessCode] = useState("");
   const navigate = useNavigate();
 
