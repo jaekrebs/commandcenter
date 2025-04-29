@@ -5,7 +5,6 @@ import { UserSettingsPanel } from "@/components/settings/UserSettingsPanel";
 import { CharacterProfilesSection } from "@/components/settings/CharacterProfilesSection";
 import { DataManagementPanel } from "@/components/settings/DataManagementPanel";
 import { AboutPanel } from "@/components/settings/AboutPanel";
-import { AccessCodeSection } from "@/components/auth/AccessCodeSection";
 import { AuthSection } from "@/components/auth/AuthSection";
 import { useUserRole } from "@/hooks/useUserRole";
 import { UserLogsPanel } from "@/components/admin/UserLogsPanel";
@@ -96,10 +95,7 @@ export default function Settings() {
                   onSettingChange={handleSettingChange}
                 />
               </TabsContent>
-              
-              <TabsContent value="access-code" className="mt-0 space-y-4">
-                <AccessCodeSection />
-              </TabsContent>
+            
               
               <TabsContent value="auth" className="mt-0 space-y-4">
                 <AuthSection />
