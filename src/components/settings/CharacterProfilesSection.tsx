@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
-import { useCharacterProfiles } from "@/hooks/useCharacterProfiles";
+import { useCharacterProfiles, type CharacterProfile } from "@/hooks/useCharacterProfiles";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function CharacterProfilesSection() {
@@ -35,7 +35,7 @@ export function CharacterProfilesSection() {
       // 3) Insert the new character profile
       const { data, error } = await supabase
         .from("character_profiles")
-        .insert([{ name: newProfileName, profile_id: userId }])
+        .insert([{ name: newProfileName, user_id: userId }])
         .select()
         .single();
       if (error) throw error;
@@ -83,7 +83,7 @@ export function CharacterProfilesSection() {
             <p className="text-sm text-gray-500">No character profiles yet</p>
           ) : (
             <div className="space-y-2">
-              {characterProfiles.map((profile) => (
+              {characterProfiles.map((profile: CharacterProfile) => (
                 <div
                   key={profile.id}
                   className="flex items-center justify-between p-2 bg-background/5 rounded-md"
@@ -104,3 +104,4 @@ export function CharacterProfilesSection() {
     </div>
   );
 }
+
