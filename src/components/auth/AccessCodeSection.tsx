@@ -33,7 +33,11 @@ export function AccessCodeSection() {
   // Save or update
   const handleSaveAccessCode = async () => {
     if (!/^\d{4}$/.test(accessCode)) {
-      toast({ title: "Invalid access code", description: "Please enter a valid 4-digit code", variant: "destructive" });
+      toast({
+        title: "Invalid access code",
+        description: "Please enter a valid 4-digit code",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -53,6 +57,7 @@ export function AccessCodeSection() {
       const op = existing
         ? supabase.from("access_codes").update({ code: accessCode }).eq("user_id", session.user.id)
         : supabase.from("access_codes").insert([{ user_id: session.user.id, code: accessCode }]);
+
       const { error } = await op;
       if (error) throw error;
 
@@ -79,17 +84,18 @@ export function AccessCodeSection() {
               maxLength={4}
               value={accessCode}
               onChange={setAccessCode}
-            >
-              <InputOTPGroup className="gap-4">
-                {[0, 1, 2, 3].map((idx) => (
-                  <InputOTPSlot
-                    key={idx}
-                    index={idx}
-                    className="w-14 h-14 text-2xl bg-cyber-darkgray/50 border-cyber-purple/30"
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
+              render={({ slots }) => (
+                <InputOTPGroup className="gap-4">
+                  {slots.map((slot, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="w-14 h-14 text-2xl bg-cyber-darkgray/50 border-cyber-purple/30"
+                    />
+                  ))}
+                </InputOTPGroup>
+              )}
+            />
           </div>
         </div>
 
