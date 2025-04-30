@@ -1,23 +1,23 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LoadingState } from "@/components/LoadingState";
 import { useNotes, Note } from "@/hooks/useNotes";
 import { NoteSidebar } from "@/components/notes/NoteSidebar";
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { NoteViewer } from "@/components/notes/NoteViewer";
+import { useSelectedProfile } from "@/hooks/useSelectedProfile";
 
 export default function Notes() {
-  const { notes, isLoading, addNote, updateNote, deleteNote, hasCharacter } = useNotes();
+  const { profile: selectedCharacter } = useSelectedProfile();
+  const { notes, isLoading, addNote, updateNote, deleteNote } = useNotes();
   const [activeNote, setActiveNote] = useState<Note | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
 
-  // Set the first note as active when notes load or change
-  useState(() => {
+  useEffect(() => {
     if (notes.length > 0 && !activeNote) {
       setActiveNote(notes[0]);
     }
-  });
+  }, [notes, activeNote]);
 
   const handleNoteClick = (note: Note) => {
     setActiveNote(note);
@@ -39,13 +39,11 @@ export default function Notes() {
     }
   };
 
-  // Show loading state while fetching notes
   if (isLoading) {
     return <LoadingState message="Loading notes data..." />;
   }
 
-  // Show character selection message if no character is selected
-  if (!hasCharacter) {
+  if (!selectedCharacter) {
     return (
       <div className="container px-4 py-8 mx-auto">
         <LoadingState 

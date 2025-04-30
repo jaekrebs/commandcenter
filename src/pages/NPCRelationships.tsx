@@ -1,12 +1,13 @@
-
 import { useState } from "react";
 import { NPCGrid } from "@/components/npc/NPCGrid";
 import { NPCHeader } from "@/components/npc/NPCHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { useNPCs } from "@/hooks/useNPCs";
+import { useSelectedProfile } from "@/hooks/useSelectedProfile";
 
 export default function NPCRelationships() {
-  const { npcs, isLoading, hasCharacter, updateNPC } = useNPCs();
+  const { profile: selectedCharacter } = useSelectedProfile();
+  const { npcs, isLoading, updateNPC } = useNPCs();
   const [filteredNPCs, setFilteredNPCs] = useState(npcs);
 
   const handleSearch = (searchTerm: string) => {
@@ -16,13 +17,11 @@ export default function NPCRelationships() {
     setFilteredNPCs(filtered);
   };
 
-  // Show loading state while fetching NPCs data
   if (isLoading) {
     return <LoadingState message="Loading NPC relationship data..." />;
   }
 
-  // Show character selection message if no character is selected
-  if (!hasCharacter) {
+  if (!selectedCharacter) {
     return (
       <div className="container px-4 py-8 mx-auto">
         <LoadingState 

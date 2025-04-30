@@ -1,5 +1,4 @@
 import { CharacterProfile } from "../components/CharacterProfile";
-import { RelicStatus } from "../components/RelicStatus";
 import { MissionCard } from "../components/MissionCard";
 import { useSelectedProfile } from "@/hooks/useSelectedProfile";
 import { useMissions } from "@/hooks/useMissions";
@@ -49,7 +48,7 @@ export default function Dashboard() {
         </div>
         
         <div className="space-y-6">
-          <RelicStatus />
+        
           
           <div className="cyber-panel">
             <h2 className="text-xl font-bold text-white mb-4">

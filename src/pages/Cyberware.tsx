@@ -1,12 +1,13 @@
-
 import { useState } from "react";
 import { useCyberware, CyberwareItem } from "@/hooks/useCyberware";
+import { useSelectedProfile } from "@/hooks/useSelectedProfile";
 import { LoadingState } from "@/components/LoadingState";
 import { CyberwareStats } from "@/components/cyberware/CyberwareStats";
 import { AddCyberwareForm } from "@/components/cyberware/AddCyberwareForm";
 import { CyberwareItemComponent } from "@/components/cyberware/CyberwareItem";
 
 export default function Gear() {
+  const { profile: selectedCharacter } = useSelectedProfile();
   const {
     cyberware,
     isLoading,
@@ -14,6 +15,7 @@ export default function Gear() {
     updateCyberware,
     deleteCyberware
   } = useCyberware();
+
   const [isAdding, setIsAdding] = useState(false);
   const [newCyberware, setNewCyberware] = useState<Omit<CyberwareItem, "id">>({
     name: "",
@@ -27,6 +29,18 @@ export default function Gear() {
 
   if (isLoading) {
     return <LoadingState message="Loading gear..." />;
+  }
+
+  if (!selectedCharacter) {
+    return (
+      <div className="container px-4 py-8 mx-auto">
+        <LoadingState 
+          message="Gear data unavailable" 
+          type="character-required"
+          showRedirect={true}
+        />
+      </div>
+    );
   }
 
   const handleAdd = () => {

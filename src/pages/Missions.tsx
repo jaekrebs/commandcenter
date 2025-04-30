@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Mission } from "../components/MissionCard";
@@ -6,25 +5,25 @@ import { MissionList } from "../components/missions/MissionList";
 import { MissionFilters } from "../components/missions/MissionFilters";
 import { AddMissionForm } from "../components/missions/AddMissionForm";
 import { useMissions } from "../hooks/useMissions";
+import { useSelectedProfile } from "@/hooks/useSelectedProfile";
 import { LoadingState } from "@/components/LoadingState";
 
 export default function Missions() {
+  const { profile: selectedCharacter } = useSelectedProfile();
   const [activeTab, setActiveTab] = useState<"all" | "main" | "side" | "gig">("all");
   const [showNewMissionForm, setShowNewMissionForm] = useState(false);
-  const { missions, isLoading, addMission, updateMission, deleteMission, hasCharacter } = useMissions();
+  const { missions, isLoading, addMission, updateMission, deleteMission } = useMissions();
 
   const handleAddMission = (newMission: Omit<Mission, "id">) => {
     addMission(newMission);
     setShowNewMissionForm(false);
   };
 
-  // Show loading state while fetching missions data
   if (isLoading) {
     return <LoadingState message="Loading mission data..." />;
   }
 
-  // Show character selection message if no character is selected
-  if (!hasCharacter) {
+  if (!selectedCharacter) {
     return (
       <div className="container px-4 py-8 mx-auto">
         <LoadingState 

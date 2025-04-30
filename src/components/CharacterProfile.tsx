@@ -1,4 +1,3 @@
-
 import { Edit } from "lucide-react";
 import { ProfileDisplay } from "./character/ProfileDisplay";
 import { ProfileForm } from "./character/ProfileForm";
@@ -10,13 +9,12 @@ export function CharacterProfile() {
     setIsEditing,
     profile,
     editedProfile,
-    userProfile,
     handleProfileChange,
     handleSave,
     handleCancel
   } = useCharacterProfile();
 
-  if (!userProfile?.selected_character_profile_id) {
+  if (!profile) {
     return (
       <div className="cyber-panel">
         <h2 className="text-xl font-bold text-white mb-4">
@@ -33,14 +31,14 @@ export function CharacterProfile() {
   return (
     <div className="cyber-panel relative">
       <div className="absolute top-2 right-2">
-        {!isEditing ? (
+        {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
             className="p-1 text-cyber-purple hover:text-cyber-blue transition-colors"
           >
             <Edit size={16} />
           </button>
-        ) : null}
+        )}
       </div>
       
       <h2 className="text-xl font-bold text-white mb-4">
