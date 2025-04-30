@@ -18,6 +18,7 @@ import Uploads from "./pages/Uploads";
 import { Navigation } from "./components/Navigation";
 import { LoadingState } from "@/components/LoadingState";
 import { ThemeProvider } from "./components/ui/use-theme";
+import { SelectedProfileProvider } from "@/hooks/useSelectedProfile";
 
 const queryClient = new QueryClient();
 
@@ -59,114 +60,116 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <HashRouter>
-          <div className="min-h-screen bg-cyber-black text-white">
-            <Routes>
-              <Route path="/auth" element={<ProtectedRoute><Auth /></ProtectedRoute>} />
-              <Route 
-                index
-                element={
-                  <>
-                    <Navigation />
-                    <div className="pt-16">
-                      <ProtectedRoute><Dashboard /></ProtectedRoute>
-                    </div>
-                  </>
-                } 
-              />
-              <Route 
-                path="/npc-relationships" 
-                element={
-                  <>
-                    <Navigation />
-                    <div className="pt-16">
-                      <ProtectedRoute><NPCRelationships /></ProtectedRoute>
-                    </div>
-                  </>
-                } 
-              />
-              <Route 
-                path="/missions" 
-                element={
-                  <>
-                    <Navigation />
-                    <div className="pt-16">
-                      <ProtectedRoute><Missions /></ProtectedRoute>
-                    </div>
-                  </>
-                } 
-              />
-              <Route 
-                path="/gear" 
-                element={
-                  <>
-                    <Navigation />
-                    <div className="pt-16">
-                      <ProtectedRoute><Gear /></ProtectedRoute>
-                    </div>
-                  </>
-                } 
-              />
-              <Route 
-                path="/notes" 
-                element={
-                  <>
-                    <Navigation />
-                    <div className="pt-16">
-                      <ProtectedRoute><Notes /></ProtectedRoute>
-                    </div>
-                  </>
-                } 
-              />
-              <Route 
-                path="/settings" 
-                element={
-                  <>
-                    <Navigation />
-                    <div className="pt-16">
-                      <ProtectedRoute><Settings /></ProtectedRoute>
-                    </div>
-                  </>
-                } 
-              />
-              <Route 
-                path="/admin" 
-                element={
-                  <>
-                    <Navigation />
-                    <div className="pt-16">
-                      <ProtectedRoute><Admin /></ProtectedRoute>
-                    </div>
-                  </>
-                } 
-              />
-              <Route 
-                path="/uploads" 
-                element={
-                  <>
-                    <Navigation />
-                    <div className="pt-16">
-                      <ProtectedRoute><Uploads /></ProtectedRoute>
-                    </div>
-                  </>
-                } 
-              />
-              <Route 
-                path="*" 
-                element={
-                  <>
-                    <Navigation />
-                    <div className="pt-16">
-                      <ProtectedRoute><NotFound /></ProtectedRoute>
-                    </div>
-                  </>
-                } 
-              />
-            </Routes>
-          </div>
-        </HashRouter>
+        <SelectedProfileProvider>
+          <Toaster />
+          <Sonner />
+          <HashRouter>
+            <div className="min-h-screen bg-cyber-black text-white">
+              <Routes>
+                <Route path="/auth" element={<ProtectedRoute><Auth /></ProtectedRoute>} />
+                <Route 
+                  index
+                  element={
+                    <>
+                      <Navigation />
+                      <div className="pt-16">
+                        <ProtectedRoute><Dashboard /></ProtectedRoute>
+                      </div>
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/npc-relationships" 
+                  element={
+                    <>
+                      <Navigation />
+                      <div className="pt-16">
+                        <ProtectedRoute><NPCRelationships /></ProtectedRoute>
+                      </div>
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/missions" 
+                  element={
+                    <>
+                      <Navigation />
+                      <div className="pt-16">
+                        <ProtectedRoute><Missions /></ProtectedRoute>
+                      </div>
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/gear" 
+                  element={
+                    <>
+                      <Navigation />
+                      <div className="pt-16">
+                        <ProtectedRoute><Gear /></ProtectedRoute>
+                      </div>
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/notes" 
+                  element={
+                    <>
+                      <Navigation />
+                      <div className="pt-16">
+                        <ProtectedRoute><Notes /></ProtectedRoute>
+                      </div>
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/settings" 
+                  element={
+                    <>
+                      <Navigation />
+                      <div className="pt-16">
+                        <ProtectedRoute><Settings /></ProtectedRoute>
+                      </div>
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <>
+                      <Navigation />
+                      <div className="pt-16">
+                        <ProtectedRoute><Admin /></ProtectedRoute>
+                      </div>
+                    </>
+                  } 
+                />
+                <Route 
+                  path="/uploads" 
+                  element={
+                    <>
+                      <Navigation />
+                      <div className="pt-16">
+                        <ProtectedRoute><Uploads /></ProtectedRoute>
+                      </div>
+                    </>
+                  } 
+                />
+                <Route 
+                  path="*" 
+                  element={
+                    <>
+                      <Navigation />
+                      <div className="pt-16">
+                        <ProtectedRoute><NotFound /></ProtectedRoute>
+                      </div>
+                    </>
+                  } 
+                />
+              </Routes>
+            </div>
+          </HashRouter>
+        </SelectedProfileProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

@@ -1,62 +1,22 @@
-
 import { CharacterProfile } from "../components/CharacterProfile";
 import { RelicStatus } from "../components/RelicStatus";
 import { MissionCard } from "../components/MissionCard";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { LoadingState } from "@/components/LoadingState";
+import { useSelectedProfile } from "@/hooks/useSelectedProfile";
 import { useMissions } from "@/hooks/useMissions";
+import { LoadingState } from "@/components/LoadingState";
 
 export default function Dashboard() {
-  const { data: userProfile, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ["user-profile"],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return null;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("selected_character_profile_id")
-        .eq("id", session.user.id)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Use the missions hook instead of hardcoded data
+  const { profile: selectedCharacter } = useSelectedProfile();
   const { missions, isLoading: isLoadingMissions, updateMission } = useMissions();
 
-  console.log("Dashboard render - userProfile:", userProfile);
-  console.log("isLoadingProfile:", isLoadingProfile);
-
-  // Show loading state if still loading profile or missions data
-  if (isLoadingProfile || isLoadingMissions) {
+  if (!selectedCharacter || isLoadingMissions) {
     return <LoadingState message="Loading character data..." />;
   }
 
-  // Show character selection message if no character is selected
-  if (!userProfile?.selected_character_profile_id) {
-    console.log("No character selected, showing redirect");
-    return (
-      <div className="container px-4 py-8 mx-auto text-white">
-        <LoadingState 
-          message="Access terminal ready" 
-          type="character-required"
-          showRedirect={true}
-        />
-      </div>
-    );
-  }
-
-  // Sort and filter missions for the dashboard view
   const recentMissions = missions
     .sort((a, b) => {
-      // Sort completed missions to the bottom
       if (a.completed && !b.completed) return 1;
       if (!a.completed && b.completed) return -1;
-      // Then sort by progress (descending)
       return b.progress_percent - a.progress_percent;
     })
     .slice(0, 3);
@@ -81,7 +41,7 @@ export default function Dashboard() {
                   key={mission.id}
                   mission={mission}
                   onUpdate={updateMission}
-                  onDelete={() => {}} // We don't need delete on dashboard view
+                  onDelete={() => {}}
                 />
               ))}
             </div>
